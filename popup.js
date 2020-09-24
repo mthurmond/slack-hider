@@ -1,5 +1,5 @@
-let feedbackURL = 'https://bengrosser.com/';
-let githubURL = 'https://github.com/';
+let feedbackURL = 'https://github.com/mthurmond/slack-hider/issues';
+let githubURL = 'https://github.com/mthurmond/slack-hider';
 
 let removeExtensionURL = 'www.google.com';
 let unpinURL = 'www.tesla.com';
