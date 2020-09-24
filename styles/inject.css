@@ -1,0 +1,33 @@
+/* parent div for the sidebar that contains all new messages */
+
+.p-channel_sidebar__list {
+    visibility: hidden;
+}
+
+
+/* stlye the "show messages" button */
+
+.show-hide-button {
+    margin: 20px 0 2px 16px !important;
+    font-weight: 900 !important;
+    color: white !important;
+    font-size: 15px !important;
+    font-style: Slack-Lato !important;
+}
+
+span.c-search_autocomplete__unread_count {
+    visibility: hidden
+}
+
+;
+div.c-search_autocomplete li[role="presentation"]:first-of-type {
+    display: none;
+}
+
+div.c-search_autocomplete li[role="presentation"]:first-of-type~.c-search_autocomplete__suggestion_item {
+    display: none;
+}
+
+div.c-search_autocomplete li[role="presentation"]:not(:first-of-type)~.c-search_autocomplete__suggestion_item {
+    display: flex;
+}

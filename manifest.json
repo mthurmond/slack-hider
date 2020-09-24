@@ -1,0 +1,35 @@
+{
+    "name": "Slack hider",
+    "version": "1.0",
+    "description": "Hide your slacks to focus and get in the flow. Unhide them whenever you're ready.",
+    "manifest_version": 2,
+
+    "browser_action": {
+        "default_popup": "popup.html"
+      },
+
+
+    "permissions": [
+        "activeTab", 
+        "tabs",
+        "declarativeContent", 
+        "management",
+        "storage",
+        "http://*/",
+        "https://*/",
+        "https://unpkg.com/ionicons@5.1.2/dist/ionicons.js"
+    ],
+
+    "icons": {
+        "16": "icons/16.png",
+        "32": "icons/32.png",
+        "48": "icons/48.png",
+        "128": "icons/128.png"
+    },
+
+    "content_scripts": [{
+        "matches": ["https://app.slack.com/client*"],
+        "css": ["styles/inject.css"],
+        "js": ["scripts/inject.js"]
+    }]
+}
