@@ -3,4 +3,4 @@
  
  Requires you to use the slack web app, not the desktop app. 
  
- Forked from [quiet-slack](https://github.com/tavva/quiet-slack) and updated.
+ Originally forked from [quiet-slack](https://github.com/tavva/quiet-slack), then made several updates.
