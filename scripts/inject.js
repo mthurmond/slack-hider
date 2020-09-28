@@ -5,13 +5,14 @@ let noMessageFavicon = "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgC
 //create button that hides messages
 var show_hide_button = document.createElement('button');
 show_hide_button.innerHTML = 'Show messages';
+//apply css created in inject.css file, and a native slack css class 
 show_hide_button.classList.add('show-hide-button', 'c-button-unstyled');
 
 //create flag to control whether messages sidebar should be hidden
 var hidden = true;
 
 function clear_injected_css() {
-    var existing_node = document.getElementById('quiet-slack-injected');
+    var existing_node = document.getElementById('slack-hider-injected');
 
     if (existing_node) {
         existing_node.parentNode.removeChild(existing_node);
@@ -20,11 +21,12 @@ function clear_injected_css() {
 
 function inject_css(str) {
     var node = document.createElement('style');
-    node.setAttribute('id', 'quiet-slack-injected');
+    node.setAttribute('id', 'slack-hider-injected');
     node.innerHTML = str;
     document.body.appendChild(node);
 }
 
+//figure out what type of js syntax this is. it acts like a switch statement and can be called like a function
 selectors = {
     'Search unread count': function(value) { return `span.c-search_autocomplete__unread_count { visibility: ${value}; }` },
     'Unread search results header': function(value) { return `div.c-search_autocomplete li[role="presentation"]:first-of-type { display: ${value}; }` },
@@ -32,14 +34,18 @@ selectors = {
     'Other search results': function(value) { return `div.c-search_autocomplete li[role="presentation"]:not(:first-of-type) ~ .c-search_autocomplete__suggestion_item { display: ${value}; }` },
 }
 
+//called with current "hidden" boolean value. 
 function activate(hide) {
     var sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
+    //stores appropriate values for the messaging sidebars css visibility and display properties based on whether it should be hidden
     target_visibility = hide ? 'hidden' : 'visible';
     target_display = hide ? 'none' : 'flex';
 
+    //applies appropriate css visibility value and button text
     sidebar_node.style.visibility = target_visibility;
     show_hide_button.innerHTML = hide ? 'Show messages' : 'Hide messages';
 
+    //inject css to show/hide unread message notifications in the slack search results 
     clear_injected_css();
     inject_css(selectors['Unread search results header'](target_display));
     inject_css(selectors['Unread search results'](target_display));
@@ -65,10 +71,11 @@ function detect_inactivity() {
     }
 };
 
-//stores messages sidebar in variable, adds listener to button
+//store messages sidebar in a variable
 function main() {
     var sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
 
+    //if button is clicked, adds listener to button that calls "activate" function when button is clicked and passes opposite of current "hidden" boolean value
     show_hide_button.addEventListener('click', function(evt) {
         activate(!hidden);
     });
@@ -78,7 +85,8 @@ function main() {
     detect_inactivity();
 }
 
-check_exists = setInterval(function() {
+// first step of js function executions. continuously check if messages sidebar exists. if it does, stop checking and call "main()" function.
+let check_exists = setInterval(function() {
     if (document.getElementsByClassName('p-channel_sidebar__list').length > 0) {
         clearInterval(check_exists);
         main();
@@ -86,9 +94,7 @@ check_exists = setInterval(function() {
 }, 100);
 
 //change favicon to the permanent "no unread messages" slack favicon
-//now this refers to the image using base64 encoding. cleaner way is to load it in the extension directory, add it as a web accessible resource, and refer to it using the chrome.runtime.getURL method
-
-
+//this refers to the image using base64 encoding. cleaner way is to load it in the extension directory, add it as a web accessible resource, and refer to it using the chrome.runtime.getURL method
 window.onload = function() {
  
     setTimeout(function(){ 
