@@ -1,18 +1,18 @@
-//create variabes for the favicon element and image
+//create letiabes for the favicon element and image
 let faviconElement = document.querySelector('link[rel*="icon"]');
 let noMessageFavicon = "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAzFBMVEVKFEyScpNLFU1cK16Mao1hMmOEX4WObZBWJFiQb5FZKFtNGE97VH1QHFJOGVBsQW5jNWV2TXdsQG1aKVxdLV9WI1dwRXGObI9pPGpTIFVPG1FfL2FSH1RVIld8VX1YJlpOGlBbK12RcZJMFk5iNGSBW4JmOGhgMGF3TniLaIx9Vn5lN2eFYYaNa45eLmB5UXtkN2ZUIVaGYodkNmVtQm9YJ1pRHVOHZImCXIN1THZgMWKDXoR9V392TniMaY1nOmmKZ4tpPWtXJVlvRHFqMc1IAAABCklEQVR4Xr3RxZLEIBSG0f9C3NPuPu7u/v7vNEE6dFdRM7s+i0sFvg0EO9X0/CQFeqfeCWwyh4gmCKgSwGJOlRCuWG5gMSKBrcTch03jvwD9Z9eFNcj4gcRj1EE2H5n7OaS93+lA7uXQPKo96kDt9aH4JnDUNS+xEEsLSmKCC0zFMoWY3RmUdBKSFCYDoHPmNCCCaw6DSTC2v8bnw+E9llHrCkBUHkvJbbz1hC4Tl+khWtDaHrQjGXAxH1CSEWwGzUJMH09ktKHkRPTCdBCEdfCKteItj6EDjDuHUvnBsKkO7EywIvr8+juofMNCnnTVUsCird6Gq99o80PkRFh6VcZgFafyYDDDbv0CWLgS6JWTyyIAAAAASUVORK5CYII="
 
 //create button that hides messages
-var show_hide_button = document.createElement('button');
+let show_hide_button = document.createElement('button');
 show_hide_button.innerHTML = 'Show messages';
 //apply css created in inject.css file, and a native slack css class 
 show_hide_button.classList.add('show-hide-button', 'c-button-unstyled');
 
 //create flag to control whether messages sidebar should be hidden
-var hidden = true;
+let hidden = true;
 
 function clear_injected_css() {
-    var existing_node = document.getElementById('slack-hider-injected');
+    let existing_node = document.getElementById('slack-hider-injected');
 
     if (existing_node) {
         existing_node.parentNode.removeChild(existing_node);
@@ -20,7 +20,7 @@ function clear_injected_css() {
 }
 
 function inject_css(str) {
-    var node = document.createElement('style');
+    let node = document.createElement('style');
     node.setAttribute('id', 'slack-hider-injected');
     node.innerHTML = str;
     document.body.appendChild(node);
@@ -36,7 +36,7 @@ selectors = {
 
 //called with current "hidden" boolean value. 
 function activate(hide) {
-    var sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
+    let sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
     //stores appropriate values for the messaging sidebars css visibility and display properties based on whether it should be hidden
     target_visibility = hide ? 'hidden' : 'visible';
     target_display = hide ? 'none' : 'flex';
@@ -55,8 +55,9 @@ function activate(hide) {
     hidden = hide;
 }
 
+//function called when messages are hidden. If no mouse movement or key presses in slack browser window, the "now_inactive" function is called, which calls "activate" function with "true" boolean value so sidebar gets hidden  
 function detect_inactivity() {
-    var timeout;
+    let timeout;
 
     document.onmousemove = resetTimer;
     document.onkeypress = resetTimer;
@@ -73,7 +74,7 @@ function detect_inactivity() {
 
 //store messages sidebar in a variable
 function main() {
-    var sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
+    let sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
 
     //if button is clicked, adds listener to button that calls "activate" function when button is clicked and passes opposite of current "hidden" boolean value
     show_hide_button.addEventListener('click', function(evt) {
@@ -84,14 +85,6 @@ function main() {
 
     detect_inactivity();
 }
-
-// first step of js function executions. continuously check if messages sidebar exists. if it does, stop checking and call "main()" function.
-let check_exists = setInterval(function() {
-    if (document.getElementsByClassName('p-channel_sidebar__list').length > 0) {
-        clearInterval(check_exists);
-        main();
-    }
-}, 100);
 
 //change favicon to the permanent "no unread messages" slack favicon
 //this refers to the image using base64 encoding. cleaner way is to load it in the extension directory, add it as a web accessible resource, and refer to it using the chrome.runtime.getURL method
@@ -117,3 +110,11 @@ show_hide_button.onclick = function() {
     document.querySelector('link[rel*="icon"]').href = "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAzFBMVEVKFEyScpNLFU1cK16Mao1hMmOEX4WObZBWJFiQb5FZKFtNGE97VH1QHFJOGVBsQW5jNWV2TXdsQG1aKVxdLV9WI1dwRXGObI9pPGpTIFVPG1FfL2FSH1RVIld8VX1YJlpOGlBbK12RcZJMFk5iNGSBW4JmOGhgMGF3TniLaIx9Vn5lN2eFYYaNa45eLmB5UXtkN2ZUIVaGYodkNmVtQm9YJ1pRHVOHZImCXIN1THZgMWKDXoR9V392TniMaY1nOmmKZ4tpPWtXJVlvRHFqMc1IAAABCklEQVR4Xr3RxZLEIBSG0f9C3NPuPu7u/v7vNEE6dFdRM7s+i0sFvg0EO9X0/CQFeqfeCWwyh4gmCKgSwGJOlRCuWG5gMSKBrcTch03jvwD9Z9eFNcj4gcRj1EE2H5n7OaS93+lA7uXQPKo96kDt9aH4JnDUNS+xEEsLSmKCC0zFMoWY3RmUdBKSFCYDoHPmNCCCaw6DSTC2v8bnw+E9llHrCkBUHkvJbbz1hC4Tl+khWtDaHrQjGXAxH1CSEWwGzUJMH09ktKHkRPTCdBCEdfCKteItj6EDjDuHUvnBsKkO7EywIvr8+juofMNCnnTVUsCird6Gq99o80PkRFh6VcZgFafyYDDDbv0CWLgS6JWTyyIAAAAASUVORK5CYII="
 
 };
+
+// first step of js function executions. continuously check if messages sidebar exists. if it does, stop checking and call "main()" function.
+let check_exists = setInterval(function() {
+    if (document.getElementsByClassName('p-channel_sidebar__list').length > 0) {
+        clearInterval(check_exists);
+        main();
+    }
+}, 100);
