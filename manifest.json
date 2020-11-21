@@ -9,13 +9,8 @@
       },
 
     "permissions": [
-        "activeTab", 
-        "tabs",
-        "declarativeContent", 
         "management",
-        "storage",
-        "http://*/",
-        "https://*/"
+        "tabs"
     ],
 
     "icons": {
