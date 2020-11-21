@@ -1,15 +1,12 @@
 let feedbackURL = 'https://github.com/mthurmond/slack-hider/issues';
 let githubURL = 'https://github.com/mthurmond/slack-hider';
 
-let removeExtensionURL = 'www.google.com';
 let extensionsDetailsURL = 'chrome://extensions/?id=ghbbhaemcgjamohgkapgkdinhgdcpgim';
 
 let manageExtensionsURL = 'chrome://extensions/';
 
 let benURL = 'https://github.com/tavva';
 let mattURL = 'https://github.com/mthurmond';
-
-//$(document).ready(function() {
 
 //open the appropriate new tab when the user clicks each link
 document.querySelector(".feedbackLink").addEventListener("click", function() {
@@ -24,9 +21,6 @@ document.querySelector(".removeExtensionLink").addEventListener("click", functio
     window.close();
     chrome.management.uninstallSelf({ showConfirmDialog: true });
 });
-
-//don't think there's a way to programmatically unpin, but asked on stack overflow
-//https://stackoverflow.com/questions/63968728/how-do-i-unpin-my-chrome-extensions-icon-programmatically
 
 document.querySelector(".extensionsDetailsLink").addEventListener("click", function() {
     chrome.tabs.create({url: extensionsDetailsURL})

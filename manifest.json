@@ -8,7 +8,6 @@
         "default_popup": "popup.html"
       },
 
-
     "permissions": [
         "activeTab", 
         "tabs",
@@ -16,8 +15,7 @@
         "management",
         "storage",
         "http://*/",
-        "https://*/",
-        "https://unpkg.com/ionicons@5.1.2/dist/ionicons.js"
+        "https://*/"
     ],
 
     "icons": {
