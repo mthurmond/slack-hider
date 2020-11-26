@@ -1,7 +1,13 @@
 //create variable containing the favicon 'no messages' image
 //this refers to the image using base64 encoding. cleaner way is to load it in the extension directory, add it as a web accessible resource, and refer to it using the chrome.runtime.getURL method.
 //reference: https://developer.chrome.com/extensions/content_scripts
+// https://developer.chrome.com/extensions/manifest/web_accessible_resources
+// sidebar, load favicon from image file, not base 64 encoding
 let noMessageFavicon = "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAzFBMVEVKFEyScpNLFU1cK16Mao1hMmOEX4WObZBWJFiQb5FZKFtNGE97VH1QHFJOGVBsQW5jNWV2TXdsQG1aKVxdLV9WI1dwRXGObI9pPGpTIFVPG1FfL2FSH1RVIld8VX1YJlpOGlBbK12RcZJMFk5iNGSBW4JmOGhgMGF3TniLaIx9Vn5lN2eFYYaNa45eLmB5UXtkN2ZUIVaGYodkNmVtQm9YJ1pRHVOHZImCXIN1THZgMWKDXoR9V392TniMaY1nOmmKZ4tpPWtXJVlvRHFqMc1IAAABCklEQVR4Xr3RxZLEIBSG0f9C3NPuPu7u/v7vNEE6dFdRM7s+i0sFvg0EO9X0/CQFeqfeCWwyh4gmCKgSwGJOlRCuWG5gMSKBrcTch03jvwD9Z9eFNcj4gcRj1EE2H5n7OaS93+lA7uXQPKo96kDt9aH4JnDUNS+xEEsLSmKCC0zFMoWY3RmUdBKSFCYDoHPmNCCCaw6DSTC2v8bnw+E9llHrCkBUHkvJbbz1hC4Tl+khWtDaHrQjGXAxH1CSEWwGzUJMH09ktKHkRPTCdBCEdfCKteItj6EDjDuHUvnBsKkO7EywIvr8+juofMNCnnTVUsCird6Gq99o80PkRFh6VcZgFafyYDDDbv0CWLgS6JWTyyIAAAAASUVORK5CYII="
+
+// trying to load image from chrome extension .crx file
+// var imgURL = chrome.runtime.getURL("icons/favicon-no-messages.png");
+// var imgURL = chrome.extension.getURL("favicon-no-messages.png");
 
 //create button that hides messages
 let show_hide_button = document.createElement('button');
@@ -18,6 +24,21 @@ function clear_injected_css() {
     if (existing_node) {
         existing_node.parentNode.removeChild(existing_node);
     }
+}
+
+function swap_favicon() {
+    // last favicon successfully stored, but need global storage
+    let lastFavicon = document.querySelector('link[rel*="icon"]').href;
+
+    chrome.storage.sync.set({'value': lastFavicon}, function() {
+        console.log('Value is set to ' + lastFavicon);
+      });
+    
+      chrome.storage.sync.get(['value'], function(result) {
+        console.log('Value currently is ' + result.value);
+      });
+
+    document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
 }
 
 //add a style to the document body when called. 
@@ -74,19 +95,24 @@ function main() {
 window.onload = function() {
  
     setTimeout(function(){ 
- 
-        document.querySelector('link[rel*="icon"]').href = noMessageFavicon
+        
+        swap_favicon();
 
     }, 3000);
 
 };
 
+// adjust logic of this
+// on hide state: store url, replace with no messages url.
+// on show state: replace url with stored url. 
 show_hide_button.onclick = function() {
-    document.querySelector('link[rel*="icon"]').href = noMessageFavicon
-
+    
+    swap_favicon();
+    
 };
 
 // first step of js function executions. continuously check if messages sidebar exists. if it does, stop checking and call "main()" function.
+// i can use this to check if the favicon link exists too
 let check_exists = setInterval(function() {
     if (document.getElementsByClassName('p-channel_sidebar__list').length > 0) {
         clearInterval(check_exists);

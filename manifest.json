@@ -10,6 +10,7 @@
 
     "permissions": [
         "management",
+        "storage",
         "tabs"
     ],
 
@@ -24,5 +25,11 @@
         "matches": ["https://app.slack.com/client*"],
         "css": ["styles/inject.css"],
         "js": ["scripts/inject.js"]
-    }]
+    }],
+
+    "web_accessible_resources": [
+        "favicon-no-messages.png"
+    ]
+    
+
 }
