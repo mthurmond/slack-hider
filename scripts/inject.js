@@ -27,16 +27,16 @@ function clear_injected_css() {
 }
 
 function swap_favicon() {
-    // last favicon successfully stored, but need global storage
+    // store link to current favicon
     let lastFavicon = document.querySelector('link[rel*="icon"]').href;
 
-    chrome.storage.sync.set({'value': lastFavicon}, function() {
+    chrome.storage.sync.set({ 'value': lastFavicon }, function () {
         console.log('Value is set to ' + lastFavicon);
-      });
-    
-      chrome.storage.sync.get(['value'], function(result) {
+    });
+
+    chrome.storage.sync.get(['value'], function (result) {
         console.log('Value currently is ' + result.value);
-      });
+    });
 
     document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
 }
@@ -51,14 +51,15 @@ function inject_css(str) {
 
 //figure out what type of js syntax this is. it acts like a switch statement and can be called like a function.
 selectors = {
-    'Search unread count': function(value) { return `span.c-search_autocomplete__unread_count { visibility: ${value}; }` },
-    'Unread search results header': function(value) { return `div.c-search_autocomplete li[role="presentation"]:first-of-type { display: ${value}; }` },
-    'Unread search results': function(value) { return `div.c-search_autocomplete li[role="presentation"]:first-of-type ~ .c-search_autocomplete__suggestion_item { display: ${value}; }` },
-    'Other search results': function(value) { return `div.c-search_autocomplete li[role="presentation"]:not(:first-of-type) ~ .c-search_autocomplete__suggestion_item { display: ${value}; }` },
+    'Search unread count': function (value) { return `span.c-search_autocomplete__unread_count { visibility: ${value}; }` },
+    'Unread search results header': function (value) { return `div.c-search_autocomplete li[role="presentation"]:first-of-type { display: ${value}; }` },
+    'Unread search results': function (value) { return `div.c-search_autocomplete li[role="presentation"]:first-of-type ~ .c-search_autocomplete__suggestion_item { display: ${value}; }` },
+    'Other search results': function (value) { return `div.c-search_autocomplete li[role="presentation"]:not(:first-of-type) ~ .c-search_autocomplete__suggestion_item { display: ${value}; }` },
 }
 
-//called with current "hidden" boolean value. 
+//called when show/hide button clicked, with current "hidden" boolean value. clicking the button adjusts the sidebar visibility, button text. function isn't run on initial slack load, only when button first clicked.  
 function activate(hide) {
+    console.log("activate called");
     let sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
     //stores appropriate values for the messaging sidebars css visibility and display properties based on whether it should be hidden
     target_visibility = hide ? 'hidden' : 'visible';
@@ -68,7 +69,8 @@ function activate(hide) {
     sidebar_node.style.visibility = target_visibility;
     show_hide_button.innerHTML = hide ? 'Show messages' : 'Hide messages';
 
-    //inject css to show/hide unread message notifications in the slack search results 
+    //inject css to show/hide unread message notifications in the slack search results
+    //why does this code run regardless of the 'hide' value? 
     clear_injected_css();
     inject_css(selectors['Unread search results header'](target_display));
     inject_css(selectors['Unread search results'](target_display));
@@ -78,44 +80,42 @@ function activate(hide) {
     hidden = hide;
 }
 
-//store messages sidebar in a variable
+//add event listener to new 'show hide button' that calls a function when it's clicked, and then insert the button into the DOM
 function main() {
+    //store messages sidebar in a variable
     let sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
 
-    //if button is clicked, adds listener to button that calls "activate" function when button is clicked and passes opposite of current "hidden" boolean value
-    show_hide_button.addEventListener('click', function(evt) {
+    //adds 'click' event listener to button which calls "activate" function when button clicked, and passes opposite of current "hidden" boolean value. "hidden" is set to 'true' initially, so this initially passes 'false'.
+    show_hide_button.addEventListener('click', function (evt) {
         activate(!hidden);
     });
 
+    // insert the show_hide_button as a sibling node that's just before the sidebar
     sidebar_node.parentNode.insertBefore(show_hide_button, sidebar_node);
 
 }
 
-//change slack favicon to the "no unread messages" favicon
-window.onload = function() {
- 
-    setTimeout(function(){ 
-        
-        swap_favicon();
-
-    }, 3000);
-
-};
-
 // adjust logic of this
 // on hide state: store url, replace with no messages url.
 // on show state: replace url with stored url. 
-show_hide_button.onclick = function() {
-    
+show_hide_button.onclick = function () {
+
     swap_favicon();
-    
+
 };
 
-// first step of js function executions. continuously check if messages sidebar exists. if it does, stop checking and call "main()" function.
-// i can use this to check if the favicon link exists too
-let check_exists = setInterval(function() {
-    if (document.getElementsByClassName('p-channel_sidebar__list').length > 0) {
+// first step of js function executions. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call "main()" function.
+
+//how does this function run if it's in a variable? isn't it being defined here, and not invoked/called?
+let check_exists = setInterval(function () {
+    if (document.getElementsByClassName('p-channel_sidebar__list').length > 0 && document.querySelector('link[rel*="icon"]').href.length > 0) {
         clearInterval(check_exists);
         main();
+        swap_favicon();
     }
 }, 100);
+
+// this isn't called when i make it a variable, so unsure why function above is
+// let test_this = function mytest() {
+//     console.log("it works");
+// }
