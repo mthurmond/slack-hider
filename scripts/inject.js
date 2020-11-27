@@ -27,18 +27,31 @@ function clear_injected_css() {
 }
 
 function swap_favicon() {
-    // store link to current favicon
-    let lastFavicon = document.querySelector('link[rel*="icon"]').href;
+    
+    if (hidden) {
+    
+        console.log("hidden branch of swap favicon if/then");
+        // store link to current favicon and replace link w/ no msg favicon
+        let lastFavicon = document.querySelector('link[rel*="icon"]').href;
 
-    chrome.storage.sync.set({ 'value': lastFavicon }, function () {
-        console.log('Value is set to ' + lastFavicon);
-    });
+        chrome.storage.sync.set({ 'value': lastFavicon }, function () {
+            console.log('Value is set to ' + lastFavicon);
+        });
 
-    chrome.storage.sync.get(['value'], function (result) {
-        console.log('Value currently is ' + result.value);
-    });
+        chrome.storage.sync.get(['value'], function (result) {
+            console.log('Value currently is ' + result.value);
+        });
 
-    document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
+        document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
+
+    } else {
+        console.log("show branch of swap favicon if/then");
+        
+        chrome.storage.sync.get(['value'], function (result) {
+            document.querySelector('link[rel*="icon"]').href = result.value;
+        }); 
+
+    }
 }
 
 //add a style to the document body when called. 
@@ -77,6 +90,9 @@ function activate(hide) {
     inject_css(selectors['Other search results']('flex'));
     inject_css(selectors['Search unread count'](target_visibility));
 
+    // each time button pressed, run favicon function
+    swap_favicon();
+
     hidden = hide;
 }
 
@@ -94,15 +110,6 @@ function main() {
     sidebar_node.parentNode.insertBefore(show_hide_button, sidebar_node);
 
 }
-
-// adjust logic of this
-// on hide state: store url, replace with no messages url.
-// on show state: replace url with stored url. 
-show_hide_button.onclick = function () {
-
-    swap_favicon();
-
-};
 
 // first step of js function executions. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call "main()" function.
 

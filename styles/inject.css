@@ -1,19 +1,9 @@
-/* slack css class identifying the parent div for the left sidebar that contains all new messages */
+/* consider removing most of this code and have it down using the show-hide function */
+
+/* slack css class identifying the parent div for the left sidebar that contains all new messages. by default when slack is loaded, this sidebar is hidden. */
 .p-channel_sidebar__list {
     visibility: hidden;
 }
-
-
-/* stlye the "show messages" button created by the extension */
-/* later: see if i can do this without using "!important" */
-.show-hide-button {
-    margin: 20px 0 2px 16px !important;
-    font-weight: 900 !important;
-    color: white !important;
-    font-size: 15px !important;
-    font-style: Slack-Lato !important;
-}
-
 
 span.c-search_autocomplete__unread_count {
     visibility: hidden
@@ -29,4 +19,14 @@ div.c-search_autocomplete li[role="presentation"]:first-of-type~.c-search_autoco
 
 div.c-search_autocomplete li[role="presentation"]:not(:first-of-type)~.c-search_autocomplete__suggestion_item {
     display: flex;
+}
+
+/* stlye the "show messages" button created by the extension */
+/* later: see if i can do this without using "!important" */
+.show-hide-button {
+    margin: 20px 0 2px 16px !important;
+    font-weight: 900 !important;
+    color: white !important;
+    font-size: 15px !important;
+    font-style: Slack-Lato !important;
 }
