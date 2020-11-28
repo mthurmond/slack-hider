@@ -26,11 +26,11 @@ function clear_injected_css() {
     }
 }
 
-function swap_favicon() {
+function swap_favicon(hiddenFavicon) {
     
-    if (hidden) {
+    if (hiddenFavicon) {
     
-        console.log("hidden branch of swap favicon if/then");
+        console.log("hide branch of swap favicon if/then");
         // store link to current favicon and replace link w/ no msg favicon
         let lastFavicon = document.querySelector('link[rel*="icon"]').href;
 
@@ -38,15 +38,15 @@ function swap_favicon() {
             console.log('Value is set to ' + lastFavicon);
         });
 
-        chrome.storage.sync.get(['value'], function (result) {
-            console.log('Value currently is ' + result.value);
-        });
+        // chrome.storage.sync.get(['value'], function (result) {
+        //     console.log('Value currently is ' + result.value);
+        // });
 
         document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
 
     } else {
         console.log("show branch of swap favicon if/then");
-        
+
         chrome.storage.sync.get(['value'], function (result) {
             document.querySelector('link[rel*="icon"]').href = result.value;
         }); 
@@ -91,7 +91,7 @@ function activate(hide) {
     inject_css(selectors['Search unread count'](target_visibility));
 
     // each time button pressed, run favicon function
-    swap_favicon();
+    swap_favicon(hide);
 
     hidden = hide;
 }
@@ -118,7 +118,7 @@ let check_exists = setInterval(function () {
     if (document.getElementsByClassName('p-channel_sidebar__list').length > 0 && document.querySelector('link[rel*="icon"]').href.length > 0) {
         clearInterval(check_exists);
         main();
-        swap_favicon();
+        swap_favicon(hidden);
     }
 }, 100);
 
