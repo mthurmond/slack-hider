@@ -9,11 +9,29 @@ let noMessageFavicon = "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgC
 // var imgURL = chrome.runtime.getURL("icons/favicon-no-messages.png");
 // var imgURL = chrome.extension.getURL("favicon-no-messages.png");
 
-//create button that hides messages
-let show_hide_button = document.createElement('button');
-show_hide_button.innerHTML = 'Show messages';
-//apply css created in inject.css file, and a native slack css class 
-show_hide_button.classList.add('show-hide-button', 'c-button-unstyled');
+
+let show_hide_button = '';
+
+//add button to DOM that hides messages
+function createButton() {
+    show_hide_button = document.createElement('button');
+
+    show_hide_button.innerHTML = 'Show messages';
+    //apply css created in inject.css file, and a native slack css class 
+    show_hide_button.classList.add('show-hide-button', 'c-button-unstyled');
+
+    //adds 'click' event listener to button which calls "activate" function when button clicked, and passes opposite of current "hidden" boolean value. "hidden" is set to 'true' initially, so this initially passes 'false'.
+    show_hide_button.addEventListener('click', function (evt) {
+        activate(!hidden);
+    });
+
+    //store messages sidebar in a variable
+    let sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
+
+    // insert the show_hide_button as a sibling node that's just before the sidebar
+    sidebar_node.parentNode.insertBefore(show_hide_button, sidebar_node);
+
+}
 
 //create flag to control whether messages sidebar should be hidden
 let hidden = true;
@@ -37,10 +55,6 @@ function swap_favicon(hiddenFavicon) {
         chrome.storage.sync.set({ 'value': lastFavicon }, function () {
             console.log('Value is set to ' + lastFavicon);
         });
-
-        // chrome.storage.sync.get(['value'], function (result) {
-        //     console.log('Value currently is ' + result.value);
-        // });
 
         document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
 
@@ -98,31 +112,15 @@ function activate(hide) {
 
 //add event listener to new 'show hide button' that calls a function when it's clicked, and then insert the button into the DOM
 function main() {
-    //store messages sidebar in a variable
-    let sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
-
-    //adds 'click' event listener to button which calls "activate" function when button clicked, and passes opposite of current "hidden" boolean value. "hidden" is set to 'true' initially, so this initially passes 'false'.
-    show_hide_button.addEventListener('click', function (evt) {
-        activate(!hidden);
-    });
-
-    // insert the show_hide_button as a sibling node that's just before the sidebar
-    sidebar_node.parentNode.insertBefore(show_hide_button, sidebar_node);
 
 }
 
 // first step of js function executions. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call "main()" function.
-
-//how does this function run if it's in a variable? isn't it being defined here, and not invoked/called?
 let check_exists = setInterval(function () {
     if (document.getElementsByClassName('p-channel_sidebar__list').length > 0 && document.querySelector('link[rel*="icon"]').href.length > 0) {
         clearInterval(check_exists);
+        createButton();
         main();
         swap_favicon(hidden);
     }
 }, 100);
-
-// this isn't called when i make it a variable, so unsure why function above is
-// let test_this = function mytest() {
-//     console.log("it works");
-// }
