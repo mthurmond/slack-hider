@@ -83,6 +83,7 @@ selectors = {
     'Unread search results header': function (value) { return `div.c-search_autocomplete li[role="presentation"]:first-of-type { display: ${value}; }` },
     'Unread search results': function (value) { return `div.c-search_autocomplete li[role="presentation"]:first-of-type ~ .c-search_autocomplete__suggestion_item { display: ${value}; }` },
     'Other search results': function (value) { return `div.c-search_autocomplete li[role="presentation"]:not(:first-of-type) ~ .c-search_autocomplete__suggestion_item { display: ${value}; }` },
+    'New search unread count': function (value) { return `span.c-member__unread_count { display: ${value}; }` },
 }
 
 //called when show/hide button clicked, with current "hidden" boolean value. clicking the button adjusts the sidebar visibility, button text. function isn't run on initial slack load, only when button first clicked.  
@@ -106,6 +107,9 @@ function activate(hide) {
     inject_css(selectors['Unread search results'](target_display));
     inject_css(selectors['Other search results']('flex'));
     inject_css(selectors['Search unread count'](target_visibility));
+    //this works perfectly, not sure the ones above actually impact anything. should comment them out and see. 
+    //one thing to fix is that this isn't called until after the hide button is clicked, so searching after the initial auto-hide still shows the unread count.
+    inject_css(selectors['New search unread count'](target_display));
 
     // each time button pressed, run favicon function
     swap_favicon(hide);
