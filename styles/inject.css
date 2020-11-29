@@ -5,8 +5,9 @@
     visibility: hidden;
 }
 
+/* slack css class that styles the number of unread messages in the search autocomplete dropdown */
 span.c-search_autocomplete__unread_count {
-    visibility: hidden
+    visibility: hidden;
 }
 
 div.c-search_autocomplete li[role="presentation"]:first-of-type {

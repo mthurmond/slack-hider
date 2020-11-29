@@ -9,13 +9,16 @@ let noMessageFavicon = "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgC
 // var imgURL = chrome.runtime.getURL("icons/favicon-no-messages.png");
 // var imgURL = chrome.extension.getURL("favicon-no-messages.png");
 
+//create flag to control whether messages sidebar should be hidden
+let hidden = true;
 
 let show_hide_button = '';
 
 //add button to DOM that hides messages
-function createButton() {
+function add_show_hide_button() {
     show_hide_button = document.createElement('button');
 
+    // should try to make the default 'Hide messages' and then have the initial code call the 'activate' function to hide messages
     show_hide_button.innerHTML = 'Show messages';
     //apply css created in inject.css file, and a native slack css class 
     show_hide_button.classList.add('show-hide-button', 'c-button-unstyled');
@@ -33,9 +36,7 @@ function createButton() {
 
 }
 
-//create flag to control whether messages sidebar should be hidden
-let hidden = true;
-
+//removes all the injected css rules. it doesn't seem to be looping through and clearing all of them.
 function clear_injected_css() {
     let existing_node = document.getElementById('slack-hider-injected');
 
@@ -76,7 +77,7 @@ function inject_css(str) {
     document.body.appendChild(node);
 }
 
-//figure out what type of js syntax this is. it acts like a switch statement and can be called like a function.
+//create object that creates the appropriate css selectors to show/hide  store selector properties
 selectors = {
     'Search unread count': function (value) { return `span.c-search_autocomplete__unread_count { visibility: ${value}; }` },
     'Unread search results header': function (value) { return `div.c-search_autocomplete li[role="presentation"]:first-of-type { display: ${value}; }` },
@@ -96,9 +97,11 @@ function activate(hide) {
     sidebar_node.style.visibility = target_visibility;
     show_hide_button.innerHTML = hide ? 'Show messages' : 'Hide messages';
 
-    //inject css to show/hide unread message notifications in the slack search results
-    //why does this code run regardless of the 'hide' value? 
+    //calls function that clears css that was previously injected.
     clear_injected_css();
+
+    //inject css to show/hide unread message notifications in the slack search results
+    //i think these css rules are created and appeneded to the doc to override any other rules that occur when you trigger the slack search, which then adds the html elements and css classes dynamically. so you can't just change these elements like the ones above, i.e. the sidebar and button, because these elements likely don't exist on the page when the user clicks the show/hide button.
     inject_css(selectors['Unread search results header'](target_display));
     inject_css(selectors['Unread search results'](target_display));
     inject_css(selectors['Other search results']('flex'));
@@ -110,17 +113,11 @@ function activate(hide) {
     hidden = hide;
 }
 
-//add event listener to new 'show hide button' that calls a function when it's clicked, and then insert the button into the DOM
-function main() {
-
-}
-
 // first step of js function executions. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call "main()" function.
 let check_exists = setInterval(function () {
     if (document.getElementsByClassName('p-channel_sidebar__list').length > 0 && document.querySelector('link[rel*="icon"]').href.length > 0) {
         clearInterval(check_exists);
-        createButton();
-        main();
+        add_show_hide_button();
         swap_favicon(hidden);
     }
 }, 100);
