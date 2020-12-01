@@ -6,20 +6,8 @@
 }
 
 /* slack css class that styles the number of unread messages in the search autocomplete dropdown */
-span.c-search_autocomplete__unread_count {
-    visibility: hidden;
-}
-
-div.c-search_autocomplete li[role="presentation"]:first-of-type {
-    display: none;
-}
-
-div.c-search_autocomplete li[role="presentation"]:first-of-type~.c-search_autocomplete__suggestion_item {
-    display: none;
-}
-
-div.c-search_autocomplete li[role="presentation"]:not(:first-of-type)~.c-search_autocomplete__suggestion_item {
-    display: flex;
+span.c-member__unread_count { 
+    display: none; 
 }
 
 /* stlye the "show messages" button created by the extension */

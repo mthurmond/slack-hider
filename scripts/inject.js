@@ -1,3 +1,5 @@
+//change all variables to camel case
+
 //create variable containing the favicon 'no messages' image
 //this refers to the image using base64 encoding. cleaner way is to load it in the extension directory, add it as a web accessible resource, and refer to it using the chrome.runtime.getURL method.
 //reference: https://developer.chrome.com/extensions/content_scripts
@@ -10,22 +12,23 @@ let noMessageFavicon = "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgC
 // var imgURL = chrome.extension.getURL("favicon-no-messages.png");
 
 //create flag to control whether messages sidebar should be hidden
-let hidden = true;
+//should probably change this name to isHidden or something, since only functions should start with action verb?
+let hideMessages = true;
 
 let show_hide_button = '';
 
 //add button to DOM that hides messages
-function add_show_hide_button() {
+function addToggleButton() {
     show_hide_button = document.createElement('button');
 
-    // should try to make the default 'Hide messages' and then have the initial code call the 'activate' function to hide messages
+    // should try to make the default 'Hide messages' and then have the initial code call the 'toggleMessages' function to hide messages
     show_hide_button.innerHTML = 'Show messages';
     //apply css created in inject.css file, and a native slack css class 
     show_hide_button.classList.add('show-hide-button', 'c-button-unstyled');
 
-    //adds 'click' event listener to button which calls "activate" function when button clicked, and passes opposite of current "hidden" boolean value. "hidden" is set to 'true' initially, so this initially passes 'false'.
+    //adds 'click' event listener to button which calls "toggleMessages" function when button clicked, and passes opposite of current "hideMessages" boolean value. "hideMessages" is set to 'true' initially, so this initially passes 'false'.
     show_hide_button.addEventListener('click', function (evt) {
-        activate(!hidden);
+        toggleMessages(!hideMessages);
     });
 
     //store messages sidebar in a variable
@@ -36,18 +39,9 @@ function add_show_hide_button() {
 
 }
 
-//removes all the injected css rules. it doesn't seem to be looping through and clearing all of them.
-function clear_injected_css() {
-    let existing_node = document.getElementById('slack-hider-injected');
-
-    if (existing_node) {
-        existing_node.parentNode.removeChild(existing_node);
-    }
-}
-
-function swap_favicon(hiddenFavicon) {
+function swapFavicon(hideMessagesFavicon) {
     
-    if (hiddenFavicon) {
+    if (hideMessagesFavicon) {
     
         console.log("hide branch of swap favicon if/then");
         // store link to current favicon and replace link w/ no msg favicon
@@ -69,26 +63,32 @@ function swap_favicon(hiddenFavicon) {
     }
 }
 
-//add a style to the document body when called. 
-function inject_css(str) {
+//removes all the injected css rules
+function clearInjectedCSS() {
+    let existing_node = document.getElementById('slack-hider-injected');
+
+    if (existing_node) {
+        existing_node.parentNode.removeChild(existing_node);
+    }
+}
+
+//pass a css ruleset, and this appends it to the document body
+function injectCSS(str) {
     let node = document.createElement('style');
     node.setAttribute('id', 'slack-hider-injected');
     node.innerHTML = str;
     document.body.appendChild(node);
 }
 
-//create object that creates the appropriate css selectors to show/hide  store selector properties
+//object to store css rulesets that should be added/removed based on the hide status of messages
 selectors = {
-    'Search unread count': function (value) { return `span.c-search_autocomplete__unread_count { visibility: ${value}; }` },
-    'Unread search results header': function (value) { return `div.c-search_autocomplete li[role="presentation"]:first-of-type { display: ${value}; }` },
-    'Unread search results': function (value) { return `div.c-search_autocomplete li[role="presentation"]:first-of-type ~ .c-search_autocomplete__suggestion_item { display: ${value}; }` },
-    'Other search results': function (value) { return `div.c-search_autocomplete li[role="presentation"]:not(:first-of-type) ~ .c-search_autocomplete__suggestion_item { display: ${value}; }` },
+    //create rulset to hide the red unread message counter that appears in auto-complete search results
     'New search unread count': function (value) { return `span.c-member__unread_count { display: ${value}; }` },
 }
 
-//called when show/hide button clicked, with current "hidden" boolean value. clicking the button adjusts the sidebar visibility, button text. function isn't run on initial slack load, only when button first clicked.  
-function activate(hide) {
-    console.log("activate called");
+//called when show/hide button clicked, with current "hideMessages" boolean value. clicking the button adjusts the sidebar visibility, button text. function isn't run on initial slack load, only when button first clicked.  
+function toggleMessages(hide) {
+    console.log("toggleMessages called");
     let sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
     //stores appropriate values for the messaging sidebars css visibility and display properties based on whether it should be hidden
     target_visibility = hide ? 'hidden' : 'visible';
@@ -99,29 +99,24 @@ function activate(hide) {
     show_hide_button.innerHTML = hide ? 'Show messages' : 'Hide messages';
 
     //calls function that clears css that was previously injected.
-    clear_injected_css();
+    clearInjectedCSS();
 
-    //inject css to show/hide unread message notifications in the slack search results
-    //i think these css rules are created and appeneded to the doc to override any other rules that occur when you trigger the slack search, which then adds the html elements and css classes dynamically. so you can't just change these elements like the ones above, i.e. the sidebar and button, because these elements likely don't exist on the page when the user clicks the show/hide button.
-    inject_css(selectors['Unread search results header'](target_display));
-    inject_css(selectors['Unread search results'](target_display));
-    inject_css(selectors['Other search results']('flex'));
-    inject_css(selectors['Search unread count'](target_visibility));
-    //this works perfectly, not sure the ones above actually impact anything. should comment them out and see. 
-    //one thing to fix is that this isn't called until after the hide button is clicked, so searching after the initial auto-hide still shows the unread count.
-    inject_css(selectors['New search unread count'](target_display));
+    //inject a css rulset to show/hide unread message notifications in the slack search results. this is added as a separate css style because the element doesn't exist on the page until the user begins a search, and a separate style over-rides the other styling at that time. 
+    injectCSS(selectors['New search unread count'](target_display));
 
     // each time button pressed, run favicon function
-    swap_favicon(hide);
+    swapFavicon(hide);
 
-    hidden = hide;
+    hideMessages = hide;
 }
 
 // first step of js function executions. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call "main()" function.
 let check_exists = setInterval(function () {
     if (document.getElementsByClassName('p-channel_sidebar__list').length > 0 && document.querySelector('link[rel*="icon"]').href.length > 0) {
         clearInterval(check_exists);
-        add_show_hide_button();
-        swap_favicon(hidden);
+        addToggleButton();
+        //once this function is generalized, can call it to initially hide the messages
+        // toggleMessages(hideMessages);
+        swapFavicon(hideMessages);
     }
 }, 100);
