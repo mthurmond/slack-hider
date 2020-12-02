@@ -1,4 +1,4 @@
-//change all variables to camel case
+//generalize toggleMessages function
 
 //create variable containing the favicon 'no messages' image
 //this refers to the image using base64 encoding. cleaner way is to load it in the extension directory, add it as a web accessible resource, and refer to it using the chrome.runtime.getURL method.
@@ -13,29 +13,29 @@ let noMessageFavicon = "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgC
 
 //create flag to control whether messages sidebar should be hidden
 //should probably change this name to isHidden or something, since only functions should start with action verb?
-let hideMessages = true;
+let messagesAreHidden = true;
 
-let show_hide_button = '';
+let messageToggleButton = '';
 
 //add button to DOM that hides messages
 function addToggleButton() {
-    show_hide_button = document.createElement('button');
+    messageToggleButton = document.createElement('button');
 
     // should try to make the default 'Hide messages' and then have the initial code call the 'toggleMessages' function to hide messages
-    show_hide_button.innerHTML = 'Show messages';
+    messageToggleButton.innerHTML = 'Show messages';
     //apply css created in inject.css file, and a native slack css class 
-    show_hide_button.classList.add('show-hide-button', 'c-button-unstyled');
+    messageToggleButton.classList.add('message-toggle-button', 'c-button-unstyled');
 
-    //adds 'click' event listener to button which calls "toggleMessages" function when button clicked, and passes opposite of current "hideMessages" boolean value. "hideMessages" is set to 'true' initially, so this initially passes 'false'.
-    show_hide_button.addEventListener('click', function (evt) {
-        toggleMessages(!hideMessages);
+    //adds 'click' event listener to button which calls "toggleMessages" function when button clicked, and passes opposite of current "messagesAreHidden" boolean value. "messagesAreHidden" is set to 'true' initially, so this initially passes 'false'.
+    messageToggleButton.addEventListener('click', function (evt) {
+        toggleMessages(!messagesAreHidden);
     });
 
     //store messages sidebar in a variable
-    let sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
+    let slackChannelSidebar = document.getElementsByClassName('p-channel_sidebar__list')[0];
 
-    // insert the show_hide_button as a sibling node that's just before the sidebar
-    sidebar_node.parentNode.insertBefore(show_hide_button, sidebar_node);
+    // insert the messageToggleButton as a sibling node that's just before the sidebar
+    slackChannelSidebar.parentNode.insertBefore(messageToggleButton, slackChannelSidebar);
 
 }
 
@@ -83,40 +83,41 @@ function injectCSS(str) {
 //object to store css rulesets that should be added/removed based on the hide status of messages
 selectors = {
     //create rulset to hide the red unread message counter that appears in auto-complete search results
-    'New search unread count': function (value) { return `span.c-member__unread_count { display: ${value}; }` },
+    'New search unread count': function (value) { return `.c-member__unread_count { display: ${value}; }` },
 }
 
-//called when show/hide button clicked, with current "hideMessages" boolean value. clicking the button adjusts the sidebar visibility, button text. function isn't run on initial slack load, only when button first clicked.  
+//called when show/hide button clicked, with current "messagesAreHidden" boolean value. clicking the button adjusts the sidebar visibility, button text. function isn't run on initial slack load, only when button first clicked.  
 function toggleMessages(hide) {
     console.log("toggleMessages called");
-    let sidebar_node = document.getElementsByClassName('p-channel_sidebar__list')[0];
+    let slackChannelSidebar = document.getElementsByClassName('p-channel_sidebar__list')[0];
     //stores appropriate values for the messaging sidebars css visibility and display properties based on whether it should be hidden
-    target_visibility = hide ? 'hidden' : 'visible';
-    target_display = hide ? 'none' : 'flex';
+    elementVisibility = hide ? 'hidden' : 'visible';
+    elementDisplay = hide ? 'none' : 'flex';
 
     //applies appropriate css visibility value and button text
-    sidebar_node.style.visibility = target_visibility;
-    show_hide_button.innerHTML = hide ? 'Show messages' : 'Hide messages';
+    slackChannelSidebar.style.visibility = elementVisibility;
+    
+    messageToggleButton.innerHTML = hide ? 'Show messages' : 'Hide messages';
 
     //calls function that clears css that was previously injected.
     clearInjectedCSS();
 
     //inject a css rulset to show/hide unread message notifications in the slack search results. this is added as a separate css style because the element doesn't exist on the page until the user begins a search, and a separate style over-rides the other styling at that time. 
-    injectCSS(selectors['New search unread count'](target_display));
+    injectCSS(selectors['New search unread count'](elementDisplay));
 
     // each time button pressed, run favicon function
     swapFavicon(hide);
 
-    hideMessages = hide;
+    messagesAreHidden = hide;
 }
 
 // first step of js function executions. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call "main()" function.
-let check_exists = setInterval(function () {
+let checkExists = setInterval(function () {
     if (document.getElementsByClassName('p-channel_sidebar__list').length > 0 && document.querySelector('link[rel*="icon"]').href.length > 0) {
-        clearInterval(check_exists);
+        clearInterval(checkExists);
         addToggleButton();
         //once this function is generalized, can call it to initially hide the messages
-        // toggleMessages(hideMessages);
-        swapFavicon(hideMessages);
+        // toggleMessages(messagesAreHidden);
+        swapFavicon(messagesAreHidden);
     }
 }, 100);

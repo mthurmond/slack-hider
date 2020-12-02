@@ -6,13 +6,13 @@
 }
 
 /* slack css class that styles the number of unread messages in the search autocomplete dropdown */
-span.c-member__unread_count { 
+.c-member__unread_count { 
     display: none; 
 }
 
 /* stlye the "show messages" button created by the extension */
 /* later: see if i can do this without using "!important" */
-.show-hide-button {
+.message-toggle-button {
     margin: 20px 0 2px 16px !important;
     font-weight: 900 !important;
     color: white !important;
