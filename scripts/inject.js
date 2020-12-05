@@ -1,5 +1,7 @@
-//cleanup visibility variables
-//add hover state to toggle button
+//make default show/hide behavior easier to configure
+//finalize design requirements for toggle button. One idea: add arrow icon to left side of button, change text to "All messages", and have arrow point down or to the right based on whether messages are shown or not. 
+//make final code cleanups. cleanup comments. submit to chrome app store. 
+// https://developer.chrome.com/webstore/publish?csw=1
 
 //create variable containing the favicon 'no messages' image
 //this refers to the image using base64 encoding. cleaner way is to load it in the extension directory, add it as a web accessible resource, and refer to it using the chrome.runtime.getURL method.
@@ -12,8 +14,7 @@ let noMessageFavicon = "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgC
 // var imgURL = chrome.runtime.getURL("icons/favicon-no-messages.png");
 // var imgURL = chrome.extension.getURL("favicon-no-messages.png");
 
-//create flag to control whether messages sidebar should be hidden
-//should probably change this name to isHidden or something, since only functions should start with action verb?
+//create flag to control whether messages sidebar should be hidden. set value to true and remove initial toggleMessages function call to show messages by default. set value to false and include an initial toggleMessages call to hide messages by default.
 let messageVisibility = false;
 
 let messageToggleButton = '';
@@ -23,11 +24,21 @@ function addToggleButton() {
     messageToggleButton = document.createElement('button');
 
     // should try to make the default 'Hide messages' and then have the initial code call the 'toggleMessages' function to hide messages
-    messageToggleButton.innerHTML = '';
+    if (messageVisibility) {
+        
+        messageToggleButton.innerHTML = 'Show messages';
+
+    } else {
+
+        messageToggleButton.innerHTML = 'Hide messages';
+
+    }
+    
+    // messageToggleButton.innerHTML = '';
     //apply css created in inject.css file, and a native slack css class 
     messageToggleButton.classList.add('message-toggle-button', 'c-button-unstyled');
 
-    //adds 'click' event listener to button which calls "toggleMessages" function when button clicked, and passes opposite of current "messageVisibility" boolean value. "messageVisibility" is set to 'true' initially, so this initially passes 'false'.
+    //adds 'click' event listener to button which calls "toggleMessages" function when button clicked, and passes opposite of current "messageVisibility" boolean value. "messageVisibility" is set to 'false' initially, so this initially passes 'true'.
     messageToggleButton.addEventListener('click', function (evt) {
         toggleMessages(!messageVisibility);
     });
@@ -40,11 +51,11 @@ function addToggleButton() {
 
 }
 
-function swapFavicon(favIsVisible) {
+function swapFavicon(faviconVisiblity) {
     
-    if (favIsVisible) {
+    if (faviconVisiblity) {
     
-        console.log("show branch of swap favicon if/then");
+        console.log("show branch of swapFavicon");
 
         chrome.storage.sync.get(['value'], function (result) {
             document.querySelector('link[rel*="icon"]').href = result.value;
@@ -52,7 +63,7 @@ function swapFavicon(favIsVisible) {
 
     } else {
 
-        console.log("hide branch of swap favicon if/then");
+        console.log("hide branch of swapFavicon");
         // store link to current favicon and replace link w/ no msg favicon
         let lastFavicon = document.querySelector('link[rel*="icon"]').href;
 
@@ -67,22 +78,22 @@ function swapFavicon(favIsVisible) {
 
 //removes all the injected css rules
 function clearInjectedCSS() {
-    let existing_node = document.getElementById('slack-hider-injected');
+    let injectedNode = document.getElementById('slack-hider-injected');
 
-    if (existing_node) {
-        existing_node.parentNode.removeChild(existing_node);
+    if (injectedNode) {
+        injectedNode.parentNode.removeChild(injectedNode);
     }
 }
 
 //pass a css ruleset, and this appends it to the document body
 function injectCSS(str) {
-    let node = document.createElement('style');
-    node.setAttribute('id', 'slack-hider-injected');
-    node.innerHTML = str;
-    document.body.appendChild(node);
+    let nodeToInject = document.createElement('style');
+    nodeToInject.setAttribute('id', 'slack-hider-injected');
+    nodeToInject.innerHTML = str;
+    document.body.appendChild(nodeToInject);
 }
 
-//object to store css rulesets that should be added/removed based on the hide status of messages
+//object to store css rulesets that need to be added/removed based on message visibility
 selectors = {
     //create rulset to hide the red unread message counter that appears in auto-complete search results
     'New search unread count': function (value) { return `.c-member__unread_count { display: ${value}; }` },
@@ -109,6 +120,8 @@ function toggleMessages(isVisible) {
     //inject a css rulset to show/hide unread message notifications in the slack search results. this is added as a separate css style because the element doesn't exist on the page until the user begins a search, and a separate style over-rides the other styling at that time. 
     injectCSS(selectors['New search unread count'](elementDisplay));
 
+    //set messageVisibility equal to it's new value, opposite of what it was previously. the value was changed in the toggleMessages function call, but it must be stored in this global variable so it persists the next time the button is clicked.
+    //how does this global variable persist without using local storage or anything? i believe it persists because chrome loads inject.js when slack loads, and then stores all global variable values defined in this file, and keeps them updated as the button click event causes the variable value to be over-written.  
     messageVisibility = isVisible;
 }
 
