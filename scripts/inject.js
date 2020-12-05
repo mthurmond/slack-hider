@@ -1,18 +1,14 @@
-//make default show/hide behavior easier to configure
+//ensure the correct document title appears when messages are visible. requires cleaning up the swapTitle function. 
+
 //finalize design requirements for toggle button. One idea: add arrow icon to left side of button, change text to "All messages", and have arrow point down or to the right based on whether messages are shown or not. 
-//make final code cleanups. cleanup comments. submit to chrome app store. 
+
+//make default show/hide behavior easier to configure
+
+// publish to chrome webstore
 // https://developer.chrome.com/webstore/publish?csw=1
 
-//create variable containing the favicon 'no messages' image
-//this refers to the image using base64 encoding. cleaner way is to load it in the extension directory, add it as a web accessible resource, and refer to it using the chrome.runtime.getURL method.
-//reference: https://developer.chrome.com/extensions/content_scripts
-// https://developer.chrome.com/extensions/manifest/web_accessible_resources
-// sidebar, load favicon from image file, not base 64 encoding
-let noMessageFavicon = "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAzFBMVEVKFEyScpNLFU1cK16Mao1hMmOEX4WObZBWJFiQb5FZKFtNGE97VH1QHFJOGVBsQW5jNWV2TXdsQG1aKVxdLV9WI1dwRXGObI9pPGpTIFVPG1FfL2FSH1RVIld8VX1YJlpOGlBbK12RcZJMFk5iNGSBW4JmOGhgMGF3TniLaIx9Vn5lN2eFYYaNa45eLmB5UXtkN2ZUIVaGYodkNmVtQm9YJ1pRHVOHZImCXIN1THZgMWKDXoR9V392TniMaY1nOmmKZ4tpPWtXJVlvRHFqMc1IAAABCklEQVR4Xr3RxZLEIBSG0f9C3NPuPu7u/v7vNEE6dFdRM7s+i0sFvg0EO9X0/CQFeqfeCWwyh4gmCKgSwGJOlRCuWG5gMSKBrcTch03jvwD9Z9eFNcj4gcRj1EE2H5n7OaS93+lA7uXQPKo96kDt9aH4JnDUNS+xEEsLSmKCC0zFMoWY3RmUdBKSFCYDoHPmNCCCaw6DSTC2v8bnw+E9llHrCkBUHkvJbbz1hC4Tl+khWtDaHrQjGXAxH1CSEWwGzUJMH09ktKHkRPTCdBCEdfCKteItj6EDjDuHUvnBsKkO7EywIvr8+juofMNCnnTVUsCird6Gq99o80PkRFh6VcZgFafyYDDDbv0CWLgS6JWTyyIAAAAASUVORK5CYII="
-
-// trying to load image from chrome extension .crx file
-// var imgURL = chrome.runtime.getURL("icons/favicon-no-messages.png");
-// var imgURL = chrome.extension.getURL("favicon-no-messages.png");
+//create variable to store slack's default "no new messages" favicon. have to load the image from the slack hider .crx file using the chrome extension API's ".getURL" method. 
+var noMessageFavicon = chrome.extension.getURL("favicon-no-messages.png");
 
 //create flag to control whether messages sidebar should be hidden. set value to true and remove initial toggleMessages function call to show messages by default. set value to false and include an initial toggleMessages call to hide messages by default.
 let messageVisibility = false;
@@ -34,7 +30,6 @@ function addToggleButton() {
 
     }
     
-    // messageToggleButton.innerHTML = '';
     //apply css created in inject.css file, and a native slack css class 
     messageToggleButton.classList.add('message-toggle-button', 'c-button-unstyled');
 
@@ -53,6 +48,7 @@ function addToggleButton() {
 
 function swapFavicon(faviconVisiblity) {
     
+    //consider converting this to short form if/then syntax
     if (faviconVisiblity) {
     
         console.log("show branch of swapFavicon");
@@ -72,6 +68,32 @@ function swapFavicon(faviconVisiblity) {
         });
 
         document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
+
+    }
+}
+
+function swapTitle(titleVisiblity) {
+    
+    //consider converting this to short form if/then syntax
+    if (titleVisiblity) {
+    
+        console.log("show branch of swapTitle");
+
+        chrome.storage.sync.get(['titleValue'], function (result) {
+            document.title = result.value;
+        }); 
+
+    } else {
+
+        console.log("hide branch of swapTitle");
+        // store link to current title and replace link w/ no msg favicon
+        let lastTitle = document.title;
+
+        chrome.storage.sync.set({ 'titleValue': lastTitle }, function () {
+            console.log('Value is set to ' + lastTitle);
+        });
+
+        document.title = 'Messages hidden';
 
     }
 }
@@ -99,33 +121,34 @@ selectors = {
     'New search unread count': function (value) { return `.c-member__unread_count { display: ${value}; }` },
 }
 
-//called when show/hide button clicked, with current "messageVisibility" boolean value. clicking the button adjusts the sidebar visibility, button text. function isn't run on initial slack load, only when button first clicked.  
+//called when show/hide button clicked, with current "messageVisibility" boolean value. clicking the button adjusts the sidebar visibility and button text.   
 function toggleMessages(isVisible) {
-    console.log("toggleMessages called");
     let slackChannelSidebar = document.getElementsByClassName('p-channel_sidebar__list')[0];
-    //stores appropriate values for the messaging sidebars css visibility and display properties based on whether it should be hidden
+    //stores appropriate css values for the messaging sidebar's and any other relvant element's visibility and display properties.
     elementVisibility = isVisible ? 'visible' : 'hidden';
     elementDisplay = isVisible ? 'flex' : 'none';
 
-    //applies appropriate css visibility value and button text
     slackChannelSidebar.style.visibility = elementVisibility;
 
     messageToggleButton.innerHTML = isVisible ? 'Hide messages' : 'Show messages';
 
-    // each time button pressed, run favicon function
+    //each time button pressed, swap title
+    swapTitle(isVisible)
+
+    //each time button pressed, swap favicon
     swapFavicon(isVisible);
 
+    // clear any previous css injected
     clearInjectedCSS();
 
-    //inject a css rulset to show/hide unread message notifications in the slack search results. this is added as a separate css style because the element doesn't exist on the page until the user begins a search, and a separate style over-rides the other styling at that time. 
+    //inject a css rulset to show/hide unread message notifications in the slack search results. this is added as a separate css style because the element doesn't exist on the page until the user begins a search, and a separate style over-rides the slack default styling at that time. 
     injectCSS(selectors['New search unread count'](elementDisplay));
 
-    //set messageVisibility equal to it's new value, opposite of what it was previously. the value was changed in the toggleMessages function call, but it must be stored in this global variable so it persists the next time the button is clicked.
-    //how does this global variable persist without using local storage or anything? i believe it persists because chrome loads inject.js when slack loads, and then stores all global variable values defined in this file, and keeps them updated as the button click event causes the variable value to be over-written.  
+    //set messageVisibility equal to it's new, opposite value since isVisible was set to "!messageVisibility" in the click event handler. the new value must be stored in this global variable so it persists in the browser's memory, gets attached to the 'window' object, and so it has the correct updated value next time the button is clicked.
     messageVisibility = isVisible;
 }
 
-// first step of js function executions. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call "main()" function.
+//first step of program. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call the approrpiate functions.
 let checkExists = setInterval(function () {
     if (document.getElementsByClassName('p-channel_sidebar__list').length > 0 && document.querySelector('link[rel*="icon"]').href.length > 0) {
         clearInterval(checkExists);
