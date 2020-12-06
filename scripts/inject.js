@@ -1,4 +1,4 @@
-//ensure the correct document title appears when messages are visible. requires cleaning up the swapTitle function. 
+//ensure the correct document title appears when slack first loads and hides messages. it seems to work in all cases but this one. probably requires updating when the swapTitle function is called, since it's currently being called when the placeholder 'Slack' title has been inserted. might also need to ensure 'title' is set in the initial function call prior to calling toggleMessages. 
 
 //finalize design requirements for toggle button. One idea: add arrow icon to left side of button, change text to "All messages", and have arrow point down or to the right based on whether messages are shown or not. 
 
@@ -50,8 +50,6 @@ function swapFavicon(faviconVisiblity) {
     
     //consider converting this to short form if/then syntax
     if (faviconVisiblity) {
-    
-        console.log("show branch of swapFavicon");
 
         chrome.storage.sync.get(['value'], function (result) {
             document.querySelector('link[rel*="icon"]').href = result.value;
@@ -59,13 +57,10 @@ function swapFavicon(faviconVisiblity) {
 
     } else {
 
-        console.log("hide branch of swapFavicon");
         // store link to current favicon and replace link w/ no msg favicon
         let lastFavicon = document.querySelector('link[rel*="icon"]').href;
 
-        chrome.storage.sync.set({ 'value': lastFavicon }, function () {
-            console.log('Value is set to ' + lastFavicon);
-        });
+        chrome.storage.sync.set({ 'value': lastFavicon }, function () {});
 
         document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
 
@@ -80,17 +75,17 @@ function swapTitle(titleVisiblity) {
         console.log("show branch of swapTitle");
 
         chrome.storage.sync.get(['titleValue'], function (result) {
-            document.title = result.value;
+            document.title = result.titleValue;
         }); 
 
     } else {
-
+        
         console.log("hide branch of swapTitle");
-        // store link to current title and replace link w/ no msg favicon
+        // store current document title
         let lastTitle = document.title;
 
         chrome.storage.sync.set({ 'titleValue': lastTitle }, function () {
-            console.log('Value is set to ' + lastTitle);
+            console.log('titleValue is set to ' + lastTitle);
         });
 
         document.title = 'Messages hidden';
@@ -132,9 +127,6 @@ function toggleMessages(isVisible) {
 
     messageToggleButton.innerHTML = isVisible ? 'Hide messages' : 'Show messages';
 
-    //each time button pressed, swap title
-    swapTitle(isVisible)
-
     //each time button pressed, swap favicon
     swapFavicon(isVisible);
 
@@ -143,6 +135,9 @@ function toggleMessages(isVisible) {
 
     //inject a css rulset to show/hide unread message notifications in the slack search results. this is added as a separate css style because the element doesn't exist on the page until the user begins a search, and a separate style over-rides the slack default styling at that time. 
     injectCSS(selectors['New search unread count'](elementDisplay));
+
+    //each time button pressed, swap title. should i only run this function once the page title has been fully set? sometimes it's set to only 'Slack'. 
+    swapTitle(isVisible)
 
     //set messageVisibility equal to it's new, opposite value since isVisible was set to "!messageVisibility" in the click event handler. the new value must be stored in this global variable so it persists in the browser's memory, gets attached to the 'window' object, and so it has the correct updated value next time the button is clicked.
     messageVisibility = isVisible;

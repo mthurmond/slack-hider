@@ -1,15 +1,3 @@
-/* consider removing most of this code and have it down using the show-hide function */
-
-/* slack css class identifying the parent div for the left sidebar that contains all new messages. by default when slack is loaded, this sidebar is hidden. */
-/* .p-channel_sidebar__list {
-    visibility: hidden;
-} */
-
-/* slack css class that styles the number of unread messages in the search autocomplete dropdown */
-/* .c-member__unread_count { 
-    display: none; 
-} */
-
 /* stlye the "show messages" button created by the extension */
 /* later: see if i can do this without using "!important" */
 .message-toggle-button {
