@@ -1,5 +1,7 @@
 //ensure the correct document title appears when slack first loads and hides messages. it seems to work in all cases but this one. probably requires updating when the swapTitle function is called, since it's currently being called when the placeholder 'Slack' title has been inserted. might also need to ensure 'title' is set in the initial function call prior to calling toggleMessages. 
 
+//document title updates after i swap my title in. so need to create a listener that listens for title changes. if title change occurs, check if messages are hidden. if they are, then call change title so it'll change the title to "no messages". can also dynamically add/remove this event handler so it is only attached when messages are hidden, or even for 5 seconds after messages are hidden.
+
 //finalize design requirements for toggle button. One idea: add arrow icon to left side of button, change text to "All messages", and have arrow point down or to the right based on whether messages are shown or not. 
 
 //make default show/hide behavior easier to configure
@@ -15,13 +17,26 @@ let messageVisibility = false;
 
 let messageToggleButton = '';
 
+//make this change the title back to "Messages Hidden" if it's ever changed from this value while messageVisibility = false
+const titleObserver = new MutationObserver(function(mutations) {
+    // currently causing an infinite loop because mutation observer catcher is re-activate each time title is adjusted
+    // if (!messageVisibility) {
+    //     document.title = "Msg visibility was false";
+    //     titleObserver.disconnect();
+    // } 
+    console.log("title element has been changed to --> " + document.title);
+}).observe(
+    document.querySelector('title'),
+    { subtree: true, characterData: true, childList: true }
+);
+
 //add button to DOM that hides messages
 function addToggleButton() {
     messageToggleButton = document.createElement('button');
 
     // should try to make the default 'Hide messages' and then have the initial code call the 'toggleMessages' function to hide messages
     if (messageVisibility) {
-        
+
         messageToggleButton.innerHTML = 'Show messages';
 
     } else {
@@ -29,7 +44,7 @@ function addToggleButton() {
         messageToggleButton.innerHTML = 'Hide messages';
 
     }
-    
+
     //apply css created in inject.css file, and a native slack css class 
     messageToggleButton.classList.add('message-toggle-button', 'c-button-unstyled');
 
@@ -47,20 +62,20 @@ function addToggleButton() {
 }
 
 function swapFavicon(faviconVisiblity) {
-    
+
     //consider converting this to short form if/then syntax
     if (faviconVisiblity) {
 
         chrome.storage.sync.get(['value'], function (result) {
             document.querySelector('link[rel*="icon"]').href = result.value;
-        }); 
+        });
 
     } else {
 
         // store link to current favicon and replace link w/ no msg favicon
         let lastFavicon = document.querySelector('link[rel*="icon"]').href;
 
-        chrome.storage.sync.set({ 'value': lastFavicon }, function () {});
+        chrome.storage.sync.set({ 'value': lastFavicon }, function () { });
 
         document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
 
@@ -68,18 +83,20 @@ function swapFavicon(faviconVisiblity) {
 }
 
 function swapTitle(titleVisiblity) {
-    
+
     //consider converting this to short form if/then syntax
     if (titleVisiblity) {
-    
+
         console.log("show branch of swapTitle");
 
         chrome.storage.sync.get(['titleValue'], function (result) {
             document.title = result.titleValue;
-        }); 
+        });
+
+        //remove the mutation observer
 
     } else {
-        
+
         console.log("hide branch of swapTitle");
         // store current document title
         let lastTitle = document.title;
@@ -89,6 +106,8 @@ function swapTitle(titleVisiblity) {
         });
 
         document.title = 'Messages hidden';
+
+        //activate the mutation observer
 
     }
 }
@@ -145,7 +164,11 @@ function toggleMessages(isVisible) {
 
 //first step of program. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call the approrpiate functions.
 let checkExists = setInterval(function () {
-    if (document.getElementsByClassName('p-channel_sidebar__list').length > 0 && document.querySelector('link[rel*="icon"]').href.length > 0) {
+    if (
+        document.getElementsByClassName('p-channel_sidebar__list').length > 0 
+        && document.querySelector('link[rel*="icon"]').href.length > 0 
+        && document.title.length > 0
+    ) {
         clearInterval(checkExists);
         addToggleButton();
         //call this to hide messages when slack is first loaded
