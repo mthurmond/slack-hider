@@ -1,4 +1,6 @@
-//ensure the correct document title appears when slack first loads and hides messages. it seems to work in all cases but this one. probably requires updating when the swapTitle function is called, since it's currently being called when the placeholder 'Slack' title has been inserted. might also need to ensure 'title' is set in the initial function call prior to calling toggleMessages. 
+//ensure the correct document title appears when slack first loads and hides messages, and after the user clicks on a search result while messages are hidden (and thus changes the slack message or channel that's visible). last step to optimize code is to ensure the mutation observer is dynamically added and removed so it's only there when the messages are hidden. if i can get the 'titleObserver' variable to behave as part of the global scope this should work. however, it's not doing that for some reason, so need to investigate more.
+
+//add mutation observer for the favicon too, so it always stays as no msg image when msg are hidden
 
 //document title updates after i swap my title in. so need to create a listener that listens for title changes. if title change occurs, check if messages are hidden. if they are, then call change title so it'll change the title to "no messages". can also dynamically add/remove this event handler so it is only attached when messages are hidden, or even for 5 seconds after messages are hidden.
 
@@ -15,20 +17,13 @@ var noMessageFavicon = chrome.extension.getURL("favicon-no-messages.png");
 //create flag to control whether messages sidebar should be hidden. set value to true and remove initial toggleMessages function call to show messages by default. set value to false and include an initial toggleMessages call to hide messages by default.
 let messageVisibility = false;
 
-let messageToggleButton = '';
+let messageToggleButton;
 
-//make this change the title back to "Messages Hidden" if it's ever changed from this value while messageVisibility = false
-const titleObserver = new MutationObserver(function(mutations) {
-    // currently causing an infinite loop because mutation observer catcher is re-activate each time title is adjusted
-    // if (!messageVisibility) {
-    //     document.title = "Msg visibility was false";
-    //     titleObserver.disconnect();
-    // } 
-    console.log("title element has been changed to --> " + document.title);
-}).observe(
-    document.querySelector('title'),
-    { subtree: true, characterData: true, childList: true }
-);
+//create mutation observer that ensures the title stays "Messages Hidden" while the messages are hidden
+//explore if there's a way to disable or disconnect this when messages are showing, and enable it again when messages are hidden
+//one idea is to activate this after title is changed to 'messages hidden' and disable it when title is changed back, but i was having variable scoping issues. need to see if i can connect and disconnect this globally from within a function call
+//can possibly do this by passing these variables into the function, like this: https://stackoverflow.com/questions/41323897/disconnect-mutation-observer-from-callback-function 
+let titleObserver;
 
 //add button to DOM that hides messages
 function addToggleButton() {
@@ -89,11 +84,13 @@ function swapTitle(titleVisiblity) {
 
         console.log("show branch of swapTitle");
 
+        //may need to remove this if i think edge case will happen often where they search for and change to a new channel. to solve for this, could just insert a generic "Slack" title.
         chrome.storage.sync.get(['titleValue'], function (result) {
             document.title = result.titleValue;
         });
 
         //remove the mutation observer
+        // titleObserver.disconnect();
 
     } else {
 
@@ -108,6 +105,16 @@ function swapTitle(titleVisiblity) {
         document.title = 'Messages hidden';
 
         //activate the mutation observer
+        // titleObserver = new MutationObserver(function(mutations) {
+        //     if (!messageVisibility && document.title != "Messages hidden") {
+        //         document.title = "Messages hidden";
+        //         console.log("title element has been changed to --> " + document.title);
+        //         return;
+        //     } 
+        // }).observe(
+        //     document.querySelector('title'),
+        //     { subtree: true, characterData: true, childList: true }
+        // );
 
     }
 }
@@ -139,6 +146,8 @@ selectors = {
 function toggleMessages(isVisible) {
     let slackChannelSidebar = document.getElementsByClassName('p-channel_sidebar__list')[0];
     //stores appropriate css values for the messaging sidebar's and any other relvant element's visibility and display properties.
+    //how are these variables being used if they haven't been defined? is it best practice that i define them?
+    
     elementVisibility = isVisible ? 'visible' : 'hidden';
     elementDisplay = isVisible ? 'flex' : 'none';
 
