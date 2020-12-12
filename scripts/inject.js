@@ -1,4 +1,4 @@
-//ensure the correct document title appears when slack first loads and hides messages, and after the user clicks on a search result while messages are hidden (and thus changes the slack message or channel that's visible). last step to optimize code is to ensure the mutation observer is dynamically added and removed so it's only there when the messages are hidden. if i can get the 'titleObserver' variable to behave as part of the global scope this should work. however, it's not doing that for some reason, so need to investigate more.
+//ensure the correct document title appears when slack first loads and hides messages, and after the user clicks on a search result while messages are hidden (and thus changes the slack message or channel that's visible). last step to optimize code is to ensure the mutation observer is dynamically added and removed so it's only there when the messages are hidden. if i can get the 'titleObserver' variable to behave as part of the global scope this should work. however, it's not doing that for some reason, so need to investigate more. 12/11 - made some progress learning about objects. can now get the mutation observer object instance to console.log. next try defining titleObersver2 globally again and disconnecting it in the swapTitle 'true' portion to see if it works. 
 
 //add mutation observer for the favicon too, so it always stays as no msg image when msg are hidden
 
@@ -23,7 +23,8 @@ let messageToggleButton;
 //explore if there's a way to disable or disconnect this when messages are showing, and enable it again when messages are hidden
 //one idea is to activate this after title is changed to 'messages hidden' and disable it when title is changed back, but i was having variable scoping issues. need to see if i can connect and disconnect this globally from within a function call
 //can possibly do this by passing these variables into the function, like this: https://stackoverflow.com/questions/41323897/disconnect-mutation-observer-from-callback-function 
-let titleObserver;
+
+// var titleObserver;
 
 //add button to DOM that hides messages
 function addToggleButton() {
@@ -90,7 +91,7 @@ function swapTitle(titleVisiblity) {
         });
 
         //remove the mutation observer
-        // titleObserver.disconnect();
+        
 
     } else {
 
@@ -105,16 +106,23 @@ function swapTitle(titleVisiblity) {
         document.title = 'Messages hidden';
 
         //activate the mutation observer
-        // titleObserver = new MutationObserver(function(mutations) {
-        //     if (!messageVisibility && document.title != "Messages hidden") {
-        //         document.title = "Messages hidden";
-        //         console.log("title element has been changed to --> " + document.title);
-        //         return;
-        //     } 
-        // }).observe(
-        //     document.querySelector('title'),
-        //     { subtree: true, characterData: true, childList: true }
-        // );
+        const titleObserver2 = new MutationObserver(function(mutations) {
+            if (!messageVisibility && document.title != "Messages hidden") {
+                document.title = "Messages hidden";
+                console.log("title element has been changed to --> " + document.title);
+                return;
+            } 
+        });
+
+        titleObserver2.observe(
+            document.querySelector('title'),
+            { subtree: true, characterData: true, childList: true }
+        );
+        
+        console.log(titleObserver2);
+        titleObserver2.disconnect;
+        console.log(MutationObserver);
+        console.log(myGlobalObject.make);
 
     }
 }
