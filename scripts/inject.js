@@ -1,4 +1,6 @@
-//ensure the correct document title appears when slack first loads and hides messages. it seems to work in all cases but this one. probably requires updating when the swapTitle function is called, since it's currently being called when the placeholder 'Slack' title has been inserted. might also need to ensure 'title' is set in the initial function call prior to calling toggleMessages. 
+// v1
+//convert all js functions to arrow syntax
+//convert all if/then's to new syntax
 
 //finalize design requirements for toggle button. One idea: add arrow icon to left side of button, change text to "All messages", and have arrow point down or to the right based on whether messages are shown or not. 
 
@@ -7,13 +9,28 @@
 // publish to chrome webstore
 // https://developer.chrome.com/webstore/publish?csw=1
 
+//v2
+//see if i can get it to only run on the first mutation, not after it changes the title
+// review my file directory and clean it up/organize it if needed
+
+// --->
+
 //create variable to store slack's default "no new messages" favicon. have to load the image from the slack hider .crx file using the chrome extension API's ".getURL" method. 
-var noMessageFavicon = chrome.extension.getURL("favicon-no-messages.png");
+let noMessageFavicon = chrome.extension.getURL("favicon-no-messages.png");
 
 //create flag to control whether messages sidebar should be hidden. set value to true and remove initial toggleMessages function call to show messages by default. set value to false and include an initial toggleMessages call to hide messages by default.
 let messageVisibility = false;
 
-let messageToggleButton = '';
+let messageToggleButton;
+
+//create mutation observer that ensures the title stays "Messages Hidden" while the messages are hidden
+//explore if there's a way to disable or disconnect this when messages are showing, and enable it again when messages are hidden
+//one idea is to activate this after title is changed to 'messages hidden' and disable it when title is changed back, but i was having variable scoping issues. need to see if i can connect and disconnect this globally from within a function call
+//can possibly do this by passing these variables into the function, like this: https://stackoverflow.com/questions/41323897/disconnect-mutation-observer-from-callback-function 
+
+// declare mutation observer variables to be used later
+let titleObserver;
+let faviconObserver;
 
 //add button to DOM that hides messages
 function addToggleButton() {
@@ -21,7 +38,7 @@ function addToggleButton() {
 
     // should try to make the default 'Hide messages' and then have the initial code call the 'toggleMessages' function to hide messages
     if (messageVisibility) {
-        
+
         messageToggleButton.innerHTML = 'Show messages';
 
     } else {
@@ -29,11 +46,12 @@ function addToggleButton() {
         messageToggleButton.innerHTML = 'Hide messages';
 
     }
-    
+
     //apply css created in inject.css file, and a native slack css class 
     messageToggleButton.classList.add('message-toggle-button', 'c-button-unstyled');
 
     //adds 'click' event listener to button which calls "toggleMessages" function when button clicked, and passes opposite of current "messageVisibility" boolean value. "messageVisibility" is set to 'false' initially, so this initially passes 'true'.
+    //should i store the event/function below in a variable? it appears as anoynmous in the call stack.
     messageToggleButton.addEventListener('click', function (evt) {
         toggleMessages(!messageVisibility);
     });
@@ -47,39 +65,57 @@ function addToggleButton() {
 }
 
 function swapFavicon(faviconVisiblity) {
-    
+
     //consider converting this to short form if/then syntax
     if (faviconVisiblity) {
 
         chrome.storage.sync.get(['value'], function (result) {
             document.querySelector('link[rel*="icon"]').href = result.value;
-        }); 
+        });
+
+        //disconnect mutation observer so it doesn't require constant favicon checks when messages aren't hidden
+        faviconObserver.disconnect();
 
     } else {
 
         // store link to current favicon and replace link w/ no msg favicon
         let lastFavicon = document.querySelector('link[rel*="icon"]').href;
 
-        chrome.storage.sync.set({ 'value': lastFavicon }, function () {});
+        chrome.storage.sync.set({ 'value': lastFavicon }, function () { });
 
         document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
+
+        //set mutation observer that swaps the "no message" favicon back in if it's ever changed while messages are hidden
+        faviconObserver = new MutationObserver(function(mutations) {
+            if (!messageVisibility && document.querySelector('link[rel*="icon"]').href != noMessageFavicon) {
+                document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
+            } 
+        });
+
+        faviconObserver.observe(
+            document.querySelector('link[rel*="icon"]'),
+            {subtree: false, characterData: false, childList: false, attributeFilter: [ "href" ]}
+        );
 
     }
 }
 
 function swapTitle(titleVisiblity) {
-    
-    //consider converting this to short form if/then syntax
+
     if (titleVisiblity) {
-    
+
         console.log("show branch of swapTitle");
 
+        //may need to remove this if i think edge case will happen often where they search for and change to a new channel. to solve for this, could just insert a generic "Slack" title.
         chrome.storage.sync.get(['titleValue'], function (result) {
             document.title = result.titleValue;
-        }); 
+        });
+
+        //remove the mutation observer
+        titleObserver.disconnect();
 
     } else {
-        
+
         console.log("hide branch of swapTitle");
         // store current document title
         let lastTitle = document.title;
@@ -90,11 +126,26 @@ function swapTitle(titleVisiblity) {
 
         document.title = 'Messages hidden';
 
+        //activate the mutation observer
+        titleObserver = new MutationObserver(function(mutations) {
+            if (!messageVisibility && document.title != "Messages hidden") {
+                document.title = "Messages hidden";
+                console.log("title element has been changed to --> " + document.title);
+            } 
+        });
+
+        //think i can set subtree to false and this will work fine. not sure why i need the other two attributes as true either. maybe characterData, but prob not any child nodes of 'title' node. 
+        // https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe
+        titleObserver.observe(
+            document.querySelector('title'),
+            { subtree: true, characterData: true, childList: true }
+        );
+
     }
 }
 
-//removes all the injected css rules
-function clearInjectedCSS() {
+//removes all the injected css rules. used arrow function syntax.
+let clearInjectedCSS = () => {
     let injectedNode = document.getElementById('slack-hider-injected');
 
     if (injectedNode) {
@@ -116,12 +167,14 @@ selectors = {
     'New search unread count': function (value) { return `.c-member__unread_count { display: ${value}; }` },
 }
 
-//called when show/hide button clicked, with current "messageVisibility" boolean value. clicking the button adjusts the sidebar visibility and button text.   
+//called when show/hide button clicked, with current "messageVisibility" boolean value. clicking the button adjusts the sidebar visibility and button text.  
+//do i need to declare function parameter variables like isVisible?
 function toggleMessages(isVisible) {
     let slackChannelSidebar = document.getElementsByClassName('p-channel_sidebar__list')[0];
     //stores appropriate css values for the messaging sidebar's and any other relvant element's visibility and display properties.
-    elementVisibility = isVisible ? 'visible' : 'hidden';
-    elementDisplay = isVisible ? 'flex' : 'none';
+    
+    let elementVisibility = isVisible ? 'visible' : 'hidden';
+    let elementDisplay = isVisible ? 'flex' : 'none';
 
     slackChannelSidebar.style.visibility = elementVisibility;
 
@@ -145,7 +198,11 @@ function toggleMessages(isVisible) {
 
 //first step of program. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call the approrpiate functions.
 let checkExists = setInterval(function () {
-    if (document.getElementsByClassName('p-channel_sidebar__list').length > 0 && document.querySelector('link[rel*="icon"]').href.length > 0) {
+    if (
+        document.getElementsByClassName('p-channel_sidebar__list').length > 0 
+        && document.querySelector('link[rel*="icon"]').href.length > 0 
+        && document.title.length > 0
+    ) {
         clearInterval(checkExists);
         addToggleButton();
         //call this to hide messages when slack is first loaded
