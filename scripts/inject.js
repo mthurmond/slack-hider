@@ -1,34 +1,31 @@
 // v1
+//finalize design requirements for toggle button. One idea: add arrow icon to left side of button, change text to "All messages", and have arrow point down or to the right based on whether messages are shown or not. 
+
 //convert all js functions to arrow syntax
 //convert all if/then's to new syntax
 
-//finalize design requirements for toggle button. One idea: add arrow icon to left side of button, change text to "All messages", and have arrow point down or to the right based on whether messages are shown or not. 
-
 //make default show/hide behavior easier to configure
 
-// publish to chrome webstore
-// https://developer.chrome.com/webstore/publish?csw=1
+//review my file directory and clean it up/organize it if needed
+
+//publish to chrome webstore
+//https://developer.chrome.com/webstore/publish?csw=1
 
 //v2
-//see if i can get it to only run on the first mutation, not after it changes the title
-// review my file directory and clean it up/organize it if needed
+//see if i can get mutation observers to only run on the first mutation, not after the callback changes the title/favicon
 
 // --->
 
 //create variable to store slack's default "no new messages" favicon. have to load the image from the slack hider .crx file using the chrome extension API's ".getURL" method. 
 let noMessageFavicon = chrome.extension.getURL("favicon-no-messages.png");
 
-//create flag to control whether messages sidebar should be hidden. set value to true and remove initial toggleMessages function call to show messages by default. set value to false and include an initial toggleMessages call to hide messages by default.
+//create flag to control whether messages sidebar should be hidden. set value to true and remove initial toggleMessages function call and show messages by default. set to false and include an initial toggleMessages call to hide messages by default.
 let messageVisibility = false;
 
+//declare toggle button variable. needs to be global because it's used in multiple functions. 
 let messageToggleButton;
 
-//create mutation observer that ensures the title stays "Messages Hidden" while the messages are hidden
-//explore if there's a way to disable or disconnect this when messages are showing, and enable it again when messages are hidden
-//one idea is to activate this after title is changed to 'messages hidden' and disable it when title is changed back, but i was having variable scoping issues. need to see if i can connect and disconnect this globally from within a function call
-//can possibly do this by passing these variables into the function, like this: https://stackoverflow.com/questions/41323897/disconnect-mutation-observer-from-callback-function 
-
-// declare mutation observer variables to be used later
+// declare mutation observer variables. they're each only used in a single function but the value needs to be tracked over time. 
 let titleObserver;
 let faviconObserver;
 
@@ -36,16 +33,7 @@ let faviconObserver;
 function addToggleButton() {
     messageToggleButton = document.createElement('button');
 
-    // should try to make the default 'Hide messages' and then have the initial code call the 'toggleMessages' function to hide messages
-    if (messageVisibility) {
-
-        messageToggleButton.innerHTML = 'Show messages';
-
-    } else {
-
-        messageToggleButton.innerHTML = 'Hide messages';
-
-    }
+    messageToggleButton.innerHTML = messageVisibility ? 'Hide messages' : 'Show messages';
 
     //apply css created in inject.css file, and a native slack css class 
     messageToggleButton.classList.add('message-toggle-button', 'c-button-unstyled');
@@ -66,7 +54,6 @@ function addToggleButton() {
 
 function swapFavicon(faviconVisiblity) {
 
-    //consider converting this to short form if/then syntax
     if (faviconVisiblity) {
 
         chrome.storage.sync.get(['value'], function (result) {
@@ -117,6 +104,7 @@ function swapTitle(titleVisiblity) {
     } else {
 
         console.log("hide branch of swapTitle");
+        
         // store current document title
         let lastTitle = document.title;
 
