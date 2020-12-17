@@ -35,7 +35,7 @@ function addToggleButton() {
 
     messageToggleButton.innerHTML = messageVisibility ? 'Hide messages' : 'Show messages';
 
-    //apply css created in inject.css file, and a native slack css class 
+    //apply css from inject.css file, and a native slack css class 
     messageToggleButton.classList.add('message-toggle-button', 'c-button-unstyled');
 
     //adds 'click' event listener to button which calls "toggleMessages" function when button clicked, and passes opposite of current "messageVisibility" boolean value. "messageVisibility" is set to 'false' initially, so this initially passes 'true'.
@@ -91,8 +91,6 @@ function swapTitle(titleVisiblity) {
 
     if (titleVisiblity) {
 
-        console.log("show branch of swapTitle");
-
         //may need to remove this if i think edge case will happen often where they search for and change to a new channel. to solve for this, could just insert a generic "Slack" title.
         chrome.storage.sync.get(['titleValue'], function (result) {
             document.title = result.titleValue;
@@ -102,15 +100,11 @@ function swapTitle(titleVisiblity) {
         titleObserver.disconnect();
 
     } else {
-
-        console.log("hide branch of swapTitle");
         
         // store current document title
         let lastTitle = document.title;
 
-        chrome.storage.sync.set({ 'titleValue': lastTitle }, function () {
-            console.log('titleValue is set to ' + lastTitle);
-        });
+        chrome.storage.sync.set({ 'titleValue': lastTitle }, function () {});
 
         document.title = 'Messages hidden';
 
@@ -156,11 +150,10 @@ selectors = {
 }
 
 //called when show/hide button clicked, with current "messageVisibility" boolean value. clicking the button adjusts the sidebar visibility and button text.  
-//do i need to declare function parameter variables like isVisible?
 function toggleMessages(isVisible) {
     let slackChannelSidebar = document.getElementsByClassName('p-channel_sidebar__list')[0];
-    //stores appropriate css values for the messaging sidebar's and any other relvant element's visibility and display properties.
     
+    //store the appropriate visibility and display css values
     let elementVisibility = isVisible ? 'visible' : 'hidden';
     let elementDisplay = isVisible ? 'flex' : 'none';
 
@@ -171,16 +164,16 @@ function toggleMessages(isVisible) {
     //each time button pressed, swap favicon
     swapFavicon(isVisible);
 
-    // clear any previous css injected
+    // clear any css injected previously
     clearInjectedCSS();
 
-    //inject a css rulset to show/hide unread message notifications in the slack search results. this is added as a separate css style because the element doesn't exist on the page until the user begins a search, and a separate style over-rides the slack default styling at that time. 
+    //inject a css rulset to show/hide unread message notifications in the slack search results. it's added as a separate css style because the element doesn't exist on the page until the user begins a search, and the separate style over-rides the slack default styling at that time. 
     injectCSS(selectors['New search unread count'](elementDisplay));
 
     //each time button pressed, swap title. should i only run this function once the page title has been fully set? sometimes it's set to only 'Slack'. 
     swapTitle(isVisible)
 
-    //set messageVisibility equal to it's new, opposite value since isVisible was set to "!messageVisibility" in the click event handler. the new value must be stored in this global variable so it persists in the browser's memory, gets attached to the 'window' object, and so it has the correct updated value next time the button is clicked.
+    //set messageVisibility equal to its new, opposite value since isVisible was set to "!messageVisibility" in the click event handler. the new value must be stored in this global variable so it persists in the browser's memory, gets attached to the 'window' object, and so it has the correct updated value next time the button is clicked.
     messageVisibility = isVisible;
 }
 
