@@ -216,7 +216,7 @@ let checkExists = setInterval(function () {
     }
 }, 100);
 
-dynamically checks if favicon is correct by setting an interval. if not, swaps in correct one. 
+// dynamically checks if favicon is correct by setting an interval. if not, swaps in correct one. 
 let checkFavicon = setInterval(function () {
     if (
         //messages are hidden and favicon icon isn't "no messages"
