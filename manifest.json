@@ -9,8 +9,7 @@
       },
 
     "permissions": [
-        "storage",
-        "tabs"
+        "storage"
     ],
 
     "icons": {
