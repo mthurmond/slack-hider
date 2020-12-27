@@ -8,6 +8,8 @@ let manageExtensionsURL = 'chrome://extensions/';
 let benURL = 'https://github.com/tavva';
 let mattURL = 'https://github.com/mthurmond';
 
+let quietSlackURL = 'https://github.com/tavva/quiet-slack';
+
 //open the appropriate new tab when the user clicks each link
 document.querySelector(".feedbackLink").addEventListener("click", function() {
     chrome.tabs.create({url: feedbackURL})
@@ -15,11 +17,6 @@ document.querySelector(".feedbackLink").addEventListener("click", function() {
 
 document.querySelector(".githubLink").addEventListener("click", function() {
     chrome.tabs.create({url: githubURL})
-});
-
-document.querySelector(".removeExtensionLink").addEventListener("click", function() {
-    window.close();
-    chrome.management.uninstallSelf({ showConfirmDialog: true });
 });
 
 document.querySelector(".extensionsDetailsLink").addEventListener("click", function() {
@@ -38,3 +35,6 @@ document.querySelector(".mattLink").addEventListener("click", function() {
     chrome.tabs.create({url: mattURL})
 });
 
+document.querySelector(".quietSlackLink").addEventListener("click", function() {
+    chrome.tabs.create({url: quietSlackURL})
+});

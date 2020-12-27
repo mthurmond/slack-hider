@@ -1,12 +1,13 @@
 // v1
+//the red favicon is appearing sometimes when messages hidden. 
+//slack will swap out the node anytime a msg is received and the favicon href changes. and my mutation observer is not being called when the fav node is removed and another one added (or somehow my connecting and disconnecting the node messes this up). can test further with my new slack hider test workspace.
+//basically i need the observer to trigger the callback if the node is removed or swapped, then i need it to find the new node, and update the href value for that one. but it needs to do that once the new node has been swapped in. 
+//first thing to do is try my new mutation observer at bottom and see if that works
+//if not, can also try set interval function i created for same purpose
+
+//remove the other permission google mentioned in their email.
+
 //finalize design requirements for toggle button. One idea: add arrow icon to left side of button, change text to "All messages", and have arrow point down or to the right based on whether messages are shown or not. 
-
-//convert all js functions to arrow syntax
-//convert all if/then's to new syntax
-
-//make default show/hide behavior easier to configure
-
-//review my file directory and clean it up/organize it if needed
 
 //publish to chrome webstore
 //https://developer.chrome.com/webstore/publish?csw=1
@@ -14,12 +15,16 @@
 //v2
 //see if i can get mutation observers to only run on the first mutation, not after the callback changes the title/favicon
 
+//convert all js functions to arrow syntax
+
+//make default show/hide behavior easier to configure
+
 // --->
 
-//create variable to store slack's default "no new messages" favicon. have to load the image from the slack hider .crx file using the chrome extension API's ".getURL" method. 
-let noMessageFavicon = chrome.extension.getURL("favicon-no-messages.png");
+//store slack's "no new messages" favicon by loading the image from the .crx file using the chrome extension API's ".getURL" method. 
+let noMessageFavicon = chrome.extension.getURL("/hider/favicon-no-messages.png");
 
-//create flag to control whether messages sidebar should be hidden. set value to true and remove initial toggleMessages function call and show messages by default. set to false and include an initial toggleMessages call to hide messages by default.
+//create flag to control whether messages sidebar should be hidden. set value to true and remove initial toggleMessages function call to show messages by default. set to false and include an initial toggleMessages call to hide messages by default.
 let messageVisibility = false;
 
 //declare toggle button variable. needs to be global because it's used in multiple functions. 
@@ -35,10 +40,10 @@ function addToggleButton() {
 
     messageToggleButton.innerHTML = messageVisibility ? 'Hide messages' : 'Show messages';
 
-    //apply css from inject.css file, and a native slack css class 
+    //append an inject.css file class and a native slack class 
     messageToggleButton.classList.add('message-toggle-button', 'c-button-unstyled');
 
-    //adds 'click' event listener to button which calls "toggleMessages" function when button clicked, and passes opposite of current "messageVisibility" boolean value. "messageVisibility" is set to 'false' initially, so this initially passes 'true'.
+    //add listener that calls "toggleMessages" when button clicked, and passes opposite of current "messageVisibility" boolean value. "messageVisibility" is set to 'false' initially, so this initially passes 'true'.
     //should i store the event/function below in a variable? it appears as anoynmous in the call stack.
     messageToggleButton.addEventListener('click', function (evt) {
         toggleMessages(!messageVisibility);
@@ -56,33 +61,34 @@ function swapFavicon(faviconVisiblity) {
 
     if (faviconVisiblity) {
 
-        chrome.storage.sync.get(['value'], function (result) {
+        chrome.storage.sync.get(['faviconValue'], function (result) {
             document.querySelector('link[rel*="icon"]').href = result.value;
         });
 
         //disconnect mutation observer so it doesn't require constant favicon checks when messages aren't hidden
-        faviconObserver.disconnect();
+        // faviconObserver.disconnect();
 
     } else {
 
-        // store link to current favicon and replace link w/ no msg favicon
+        // store link to current favicon then replace it with the no msg favicon
         let lastFavicon = document.querySelector('link[rel*="icon"]').href;
 
-        chrome.storage.sync.set({ 'value': lastFavicon }, function () { });
+        chrome.storage.sync.set({ 'faviconValue': lastFavicon }, function () { });
 
         document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
 
-        //set mutation observer that swaps the "no message" favicon back in if it's ever changed while messages are hidden
-        faviconObserver = new MutationObserver(function(mutations) {
-            if (!messageVisibility && document.querySelector('link[rel*="icon"]').href != noMessageFavicon) {
-                document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
-            } 
-        });
+        // //set mutation observer that swaps the "no message" favicon back in if it's ever changed while messages are hidden
+        // faviconObserver = new MutationObserver(function(mutations) {
+        //     if (!messageVisibility && document.querySelector('link[rel*="icon"]').href != noMessageFavicon) {
+        //         document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
+        //     } 
+        // });
 
-        faviconObserver.observe(
-            document.querySelector('link[rel*="icon"]'),
-            {subtree: false, characterData: false, childList: false, attributeFilter: [ "href" ]}
-        );
+        // faviconObserver.observe(
+        //     document.querySelector('link[rel*="icon"]'),
+        //     {subtree: true, characterData: true, childList: true, attributes: true}
+        //     // {subtree: false, characterData: false, childList: false, attributeFilter: [ "href" ]}
+        // );
 
     }
 }
@@ -161,7 +167,7 @@ function toggleMessages(isVisible) {
 
     messageToggleButton.innerHTML = isVisible ? 'Hide messages' : 'Show messages';
 
-    //each time button pressed, swap favicon
+    //swap favicon each time button pressed
     swapFavicon(isVisible);
 
     // clear any css injected previously
@@ -177,6 +183,23 @@ function toggleMessages(isVisible) {
     messageVisibility = isVisible;
 }
 
+//not currently in use
+function faviconObserverFunc() {
+
+    faviconObserver = new MutationObserver(function(mutations) {
+        if (!messageVisibility && document.querySelector('link[rel*="icon"]').href != noMessageFavicon) {
+            document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
+        } 
+    });
+
+    faviconObserver.observe(document.querySelector('link[rel*="icon"]'), {subtree: true, characterData: true, childList: true, attributes: true});
+        // is this next line correct? seems i should observe the full node, not just the property
+        // google whether or not mutation observers can be called when node is removed or swapped. i could also set this on the parent and somehow observe the child favicon node(s)
+        // but first step is to try to get it to observe the full node and see if it's called when i slack self a message. then i can check if the new node is swapped in in time for the new fav link to be applied
+        // {subtree: false, characterData: false, childList: false, attributeFilter: [ "href" ]}
+
+}
+
 //first step of program. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call the approrpiate functions.
 let checkExists = setInterval(function () {
     if (
@@ -188,5 +211,24 @@ let checkExists = setInterval(function () {
         addToggleButton();
         //call this to hide messages when slack is first loaded
         toggleMessages(messageVisibility);
+        //don't use for now
+        faviconObserverFunc();
     }
 }, 100);
+
+dynamically checks if favicon is correct by setting an interval. if not, swaps in correct one. 
+let checkFavicon = setInterval(function () {
+    if (
+        //messages are hidden and favicon icon isn't "no messages"
+        messageVisibility
+        && document.querySelector('link[rel*="icon"]').href != noMessageFavicon
+    ) {
+        //determine if i still need to clear the interval
+        clearInterval(checkExists);
+        
+        // set favicon to "no messages"
+        document.querySelector('link[rel*="icon"]').href = noMessageFavicon
+    }
+}, 100);
+
+//set mutation observer that swaps the "no message" favicon back in if it's ever changed while messages are hidden
