@@ -5,10 +5,6 @@
 //first thing to do is try my new mutation observer at bottom and see if that works
 //if not, can also try set interval function i created for same purpose
 
-//remove the other permission google mentioned in their email.
-
-//finalize design requirements for toggle button. One idea: add arrow icon to left side of button, change text to "All messages", and have arrow point down or to the right based on whether messages are shown or not. 
-
 //publish to chrome webstore
 //https://developer.chrome.com/webstore/publish?csw=1
 
@@ -18,6 +14,8 @@
 //convert all js functions to arrow syntax
 
 //make default show/hide behavior easier to configure
+
+//finalize design requirements for toggle button. One idea: add arrow icon to left side of button, change text to "All messages", and have arrow point down or to the right based on whether messages are shown or not. 
 
 // --->
 
@@ -62,7 +60,7 @@ function swapFavicon(faviconVisiblity) {
     if (faviconVisiblity) {
 
         chrome.storage.sync.get(['faviconValue'], function (result) {
-            document.querySelector('link[rel*="icon"]').href = result.value;
+            document.querySelector('link[rel*="icon"]').href = result.faviconValue;
         });
 
         //disconnect mutation observer so it doesn't require constant favicon checks when messages aren't hidden
@@ -184,6 +182,7 @@ function toggleMessages(isVisible) {
 }
 
 //not currently in use
+//set mutation observer that swaps the "no message" favicon back in if it's ever changed while messages are hidden
 function faviconObserverFunc() {
 
     faviconObserver = new MutationObserver(function(mutations) {
@@ -192,7 +191,7 @@ function faviconObserverFunc() {
         } 
     });
 
-    faviconObserver.observe(document.querySelector('link[rel*="icon"]'), {subtree: true, characterData: true, childList: true, attributes: true});
+    faviconObserver.observe(document.querySelector('link[rel*="icon"]'), {subtree: false, characterData: true, childList: false, attributes: true});
         // is this next line correct? seems i should observe the full node, not just the property
         // google whether or not mutation observers can be called when node is removed or swapped. i could also set this on the parent and somehow observe the child favicon node(s)
         // but first step is to try to get it to observe the full node and see if it's called when i slack self a message. then i can check if the new node is swapped in in time for the new fav link to be applied
@@ -200,7 +199,25 @@ function faviconObserverFunc() {
 
 }
 
-//first step of program. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call the approrpiate functions.
+// this is a brute force way to do it, but it works
+// dynamically checks if favicon is correct by setting an interval. if not, swaps in correct one. 
+function setFaviconInterval() {
+    let checkFavicon = setInterval(function () {
+        if (
+            //messages are hidden and favicon icon isn't "no messages"
+            !messageVisibility
+            && document.querySelector('link[rel*="icon"]').href != noMessageFavicon
+        ) {
+            //determine if i still need to clear the interval
+            // clearInterval(checkExists);
+            
+            // set favicon to "no messages"
+            document.querySelector('link[rel*="icon"]').href = noMessageFavicon
+        }
+    }, 100);
+}
+
+//first step of program. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call the appropriate functions.
 let checkExists = setInterval(function () {
     if (
         document.getElementsByClassName('p-channel_sidebar__list').length > 0 
@@ -212,23 +229,7 @@ let checkExists = setInterval(function () {
         //call this to hide messages when slack is first loaded
         toggleMessages(messageVisibility);
         //don't use for now
-        faviconObserverFunc();
+        // faviconObserverFunc();
+        setFaviconInterval();
     }
 }, 100);
-
-// dynamically checks if favicon is correct by setting an interval. if not, swaps in correct one. 
-let checkFavicon = setInterval(function () {
-    if (
-        //messages are hidden and favicon icon isn't "no messages"
-        messageVisibility
-        && document.querySelector('link[rel*="icon"]').href != noMessageFavicon
-    ) {
-        //determine if i still need to clear the interval
-        clearInterval(checkExists);
-        
-        // set favicon to "no messages"
-        document.querySelector('link[rel*="icon"]').href = noMessageFavicon
-    }
-}, 100);
-
-//set mutation observer that swaps the "no message" favicon back in if it's ever changed while messages are hidden
