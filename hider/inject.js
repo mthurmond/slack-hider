@@ -1,23 +1,5 @@
-// v1
-//the red favicon is appearing sometimes when messages hidden. 
-//slack will swap out the node anytime a msg is received and the favicon href changes. and my mutation observer is not being called when the fav node is removed and another one added (or somehow my connecting and disconnecting the node messes this up). can test further with my new slack hider test workspace.
-//basically i need the observer to trigger the callback if the node is removed or swapped, then i need it to find the new node, and update the href value for that one. but it needs to do that once the new node has been swapped in. 
-//first thing to do is try my new mutation observer at bottom and see if that works
-//if not, can also try set interval function i created for same purpose
 
-//publish to chrome webstore
-//https://developer.chrome.com/webstore/publish?csw=1
 
-//v2
-//see if i can get mutation observers to only run on the first mutation, not after the callback changes the title/favicon
-
-//convert all js functions to arrow syntax
-
-//make default show/hide behavior easier to configure
-
-//finalize design requirements for toggle button. One idea: add arrow icon to left side of button, change text to "All messages", and have arrow point down or to the right based on whether messages are shown or not. 
-
-// --->
 
 //store slack's "no new messages" favicon by loading the image from the .crx file using the chrome extension API's ".getURL" method. 
 let noMessageFavicon = chrome.extension.getURL("/hider/favicon-no-messages.png");
@@ -27,6 +9,8 @@ let messageVisibility = false;
 
 //declare toggle button variable. needs to be global because it's used in multiple functions. 
 let messageToggleButton;
+
+let checkFavicon; 
 
 // declare mutation observer variables. they're each only used in a single function but the value needs to be tracked over time. 
 let titleObserver;
@@ -55,6 +39,21 @@ function addToggleButton() {
 
 }
 
+// this is a brute force way to do it, but it works
+// dynamically checks if favicon is correct by setting an interval. if not, swaps in correct one. 
+// function setFaviconInterval() {
+//     checkFavicon = setInterval(function () {
+//         if (
+//             //messages are hidden and favicon icon isn't "no messages"
+//             !messageVisibility
+//             && document.querySelector('link[rel*="icon"]').href != noMessageFavicon
+//         ) {
+//             // set favicon to "no messages"
+//             document.querySelector('link[rel*="icon"]').href = noMessageFavicon
+//         }
+//     }, 100);
+// }
+
 function swapFavicon(faviconVisiblity) {
 
     if (faviconVisiblity) {
@@ -65,6 +64,7 @@ function swapFavicon(faviconVisiblity) {
 
         //disconnect mutation observer so it doesn't require constant favicon checks when messages aren't hidden
         // faviconObserver.disconnect();
+        // clearInterval(checkFavicon);
 
     } else {
 
@@ -87,6 +87,7 @@ function swapFavicon(faviconVisiblity) {
         //     {subtree: true, characterData: true, childList: true, attributes: true}
         //     // {subtree: false, characterData: false, childList: false, attributeFilter: [ "href" ]}
         // );
+        // setFaviconInterval();
 
     }
 }
@@ -183,39 +184,26 @@ function toggleMessages(isVisible) {
 
 //not currently in use
 //set mutation observer that swaps the "no message" favicon back in if it's ever changed while messages are hidden
-function faviconObserverFunc() {
+// function faviconObserverFunc() {
 
-    faviconObserver = new MutationObserver(function(mutations) {
-        if (!messageVisibility && document.querySelector('link[rel*="icon"]').href != noMessageFavicon) {
-            document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
-        } 
-    });
+//     faviconObserver = new MutationObserver(function(mutations) {
+//     if (!messageVisibility){
+//             document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
+//         } 
+//     });
 
-    faviconObserver.observe(document.querySelector('link[rel*="icon"]'), {subtree: false, characterData: true, childList: false, attributes: true});
-        // is this next line correct? seems i should observe the full node, not just the property
-        // google whether or not mutation observers can be called when node is removed or swapped. i could also set this on the parent and somehow observe the child favicon node(s)
-        // but first step is to try to get it to observe the full node and see if it's called when i slack self a message. then i can check if the new node is swapped in in time for the new fav link to be applied
-        // {subtree: false, characterData: false, childList: false, attributeFilter: [ "href" ]}
+//     // && document.querySelector('link[rel*="icon"]').href != noMessageFavicon
 
-}
+//     let faviconElement = document.querySelector('link[rel*="icon"]');
 
-// this is a brute force way to do it, but it works
-// dynamically checks if favicon is correct by setting an interval. if not, swaps in correct one. 
-function setFaviconInterval() {
-    let checkFavicon = setInterval(function () {
-        if (
-            //messages are hidden and favicon icon isn't "no messages"
-            !messageVisibility
-            && document.querySelector('link[rel*="icon"]').href != noMessageFavicon
-        ) {
-            //determine if i still need to clear the interval
-            // clearInterval(checkExists);
-            
-            // set favicon to "no messages"
-            document.querySelector('link[rel*="icon"]').href = noMessageFavicon
-        }
-    }, 100);
-}
+//     faviconObserver.observe(faviconElement.parentNode, {subtree: true, characterData: true, childList: true, attributes: true});
+//         // is this next line correct? seems i should observe the full node, not just the property
+//         // google whether or not mutation observers can be called when node is removed or swapped. i could also set this on the parent and somehow observe the child favicon node(s)
+//         // but first step is to try to get it to observe the full node and see if it's called when i slack self a message. then i can check if the new node is swapped in in time for the new fav link to be applied
+//         // {subtree: false, characterData: false, childList: false, attributeFilter: [ "href" ]}
+
+// }
+
 
 //first step of program. continuously check if messages sidebar and favicon link exist. if they do, stop checking and call the appropriate functions.
 let checkExists = setInterval(function () {
@@ -228,8 +216,5 @@ let checkExists = setInterval(function () {
         addToggleButton();
         //call this to hide messages when slack is first loaded
         toggleMessages(messageVisibility);
-        //don't use for now
-        // faviconObserverFunc();
-        setFaviconInterval();
     }
 }, 100);
