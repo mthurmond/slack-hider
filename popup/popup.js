@@ -1,22 +1,22 @@
-let feedbackURL = 'https://github.com/mthurmond/slack-hider/issues';
-let githubURL = 'https://github.com/mthurmond/slack-hider';
+const githubURL = 'https://github.com/';
 
-let extensionsDetailsURL = 'chrome://extensions/?id=ghbbhaemcgjamohgkapgkdinhgdcpgim';
+const mattURL = `${githubURL}/mthurmond`;
+const slackHiderURL = `${githubURL}/mthurmond/slack-hider`;
+const feedbackURL = `${githubURL}/mthurmond/slack-hider/issues`;
 
-let manageExtensionsURL = 'chrome://extensions/';
+const benURL = `${githubURL}/tavva`;
+const quietSlackURL = `${benURL}/quiet-slack`;
 
-let benURL = 'https://github.com/tavva';
-let mattURL = 'https://github.com/mthurmond';
-
-let quietSlackURL = 'https://github.com/tavva/quiet-slack';
+const manageExtensionsURL = 'chrome://extensions/';
+const extensionsDetailsURL = `${manageExtensionsURL}?id=ghbbhaemcgjamohgkapgkdinhgdcpgim`;
 
 //open the appropriate new tab when the user clicks each link
 document.querySelector(".feedbackLink").addEventListener("click", function() {
     chrome.tabs.create({url: feedbackURL})
 });
 
-document.querySelector(".githubLink").addEventListener("click", function() {
-    chrome.tabs.create({url: githubURL})
+document.querySelector(".slackHiderLink").addEventListener("click", function() {
+    chrome.tabs.create({url: slackHiderURL})
 });
 
 document.querySelector(".extensionsDetailsLink").addEventListener("click", function() {
