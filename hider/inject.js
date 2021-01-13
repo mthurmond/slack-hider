@@ -11,6 +11,11 @@ let messageToggleButton;
 let titleObserver;
 let faviconObserver;
 
+
+function getSidebar() {
+    return document.getElementsByClassName('p-channel_sidebar__list')[0];
+}
+
 //add button to DOM that hides messages
 function addToggleButton() {
     messageToggleButton = document.createElement('button');
@@ -26,7 +31,7 @@ function addToggleButton() {
     });
 
     //store messages sidebar in a variable
-    let slackChannelSidebar = document.getElementsByClassName('p-channel_sidebar__list')[0];
+    const slackChannelSidebar = getSidebar();
 
     // insert the messageToggleButton as a sibling node that's just before the sidebar
     slackChannelSidebar.parentNode.insertBefore(messageToggleButton, slackChannelSidebar);
@@ -120,7 +125,7 @@ selectors = {
 
 //called when show/hide button clicked, with current "messageVisibility" boolean value. clicking the button adjusts the sidebar visibility and button text.  
 function toggleMessages(showMessages) {
-    let slackChannelSidebar = document.getElementsByClassName('p-channel_sidebar__list')[0];
+    const slackChannelSidebar = getSidebar();
     
     //store the appropriate visibility and display css values
     const elementVisibility = showMessages ? 'visible' : 'hidden';
