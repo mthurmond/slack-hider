@@ -11,7 +11,6 @@ let messageToggleButton;
 let titleObserver;
 let faviconObserver;
 
-
 function getSidebar() {
     return document.getElementsByClassName('p-channel_sidebar__list')[0];
 }
@@ -152,16 +151,21 @@ function toggleMessages(areMessagesVisible) {
     showMessages = areMessagesVisible;
 }
 
-//continuously check if messages sidebar and favicon link exist. once they do, stop checking and call the appropriate functions. this is the file's initial function call. 
-const checkExists = setInterval(function () {
+//once the required elements exist, this function initiates the slack hider
+function initiateSlackHider() {
+    addToggleButton();
+    //call this to hide messages by default when slack is first loaded
+    toggleMessages(showMessages);
+}
+
+//continuously check if the required elements exist. once they do, stop checking and call the appropriate function. 
+const checkForElements = setInterval(function () {
     if (
         document.getElementsByClassName('p-channel_sidebar__list').length > 0 
         && document.querySelector('link[rel*="icon"]').href.length > 0 
         && document.title.length > 0
     ) {
-        clearInterval(checkExists);
-        addToggleButton();
-        //call this to hide messages by default when slack is first loaded
-        toggleMessages(showMessages);
+        clearInterval(checkForElements);
+        initiateSlackHider();
     }
 }, 100);
