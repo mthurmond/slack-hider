@@ -1,5 +1,5 @@
 //store slack's "no new messages" favicon by loading the image from the .crx file using the chrome extension API's ".getURL" method. 
-let noMessageFavicon = chrome.extension.getURL("/hider/favicon-no-messages.png");
+const noMessageFavicon = chrome.extension.getURL("/hider/favicon-no-messages.png");
 
 //create flag to control whether messages sidebar should be hidden. set value to true and remove initial toggleMessages function call to show messages by default. set to false and include an initial toggleMessages call to hide messages by default.
 let messageVisibility = false;
@@ -33,9 +33,9 @@ function addToggleButton() {
 
 }
 
-function swapFavicon(faviconVisiblity) {
+function swapFavicon(showFavicon) {
 
-    if (faviconVisiblity) {
+    if (showFavicon) {
 
         chrome.storage.sync.get(['faviconValue'], function (result) {
             document.querySelector('link[rel*="icon"]').href = result.faviconValue;
@@ -47,7 +47,7 @@ function swapFavicon(faviconVisiblity) {
     } else {
 
         // store link to current favicon then replace it with the no msg favicon
-        let lastFavicon = document.querySelector('link[rel*="icon"]').href;
+        const lastFavicon = document.querySelector('link[rel*="icon"]').href;
         chrome.storage.sync.set({ 'faviconValue': lastFavicon }, function () { });
         document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
 
@@ -95,8 +95,8 @@ function swapTitle(titleVisiblity) {
 }
 
 //remove all injected css rules
-let clearInjectedCSS = () => {
-    let injectedNode = document.getElementById('slack-hider-injected');
+const clearInjectedCSS = () => {
+    const injectedNode = document.getElementById('slack-hider-injected');
 
     if (injectedNode) {
         injectedNode.parentNode.removeChild(injectedNode);
@@ -104,10 +104,10 @@ let clearInjectedCSS = () => {
 }
 
 //pass a css ruleset, and this appends it to the document body
-function injectCSS(str) {
+function injectCSS(CSSRule) {
     let nodeToInject = document.createElement('style');
     nodeToInject.setAttribute('id', 'slack-hider-injected');
-    nodeToInject.innerHTML = str;
+    nodeToInject.innerHTML = CSSRule;
     document.body.appendChild(nodeToInject);
 }
 
@@ -119,19 +119,19 @@ selectors = {
 }
 
 //called when show/hide button clicked, with current "messageVisibility" boolean value. clicking the button adjusts the sidebar visibility and button text.  
-function toggleMessages(isVisible) {
+function toggleMessages(showMessages) {
     let slackChannelSidebar = document.getElementsByClassName('p-channel_sidebar__list')[0];
     
     //store the appropriate visibility and display css values
-    let elementVisibility = isVisible ? 'visible' : 'hidden';
-    let elementDisplay = isVisible ? 'flex' : 'none';
+    const elementVisibility = showMessages ? 'visible' : 'hidden';
+    const elementDisplay = showMessages ? 'flex' : 'none';
 
     slackChannelSidebar.style.visibility = elementVisibility;
 
-    messageToggleButton.innerHTML = isVisible ? 'Hide messages' : 'Show messages';
+    messageToggleButton.innerHTML = showMessages ? 'Hide messages' : 'Show messages';
 
     //swap favicon each time button pressed
-    swapFavicon(isVisible);
+    swapFavicon(showMessages);
 
     // clear any css injected previously
     clearInjectedCSS();
@@ -141,14 +141,14 @@ function toggleMessages(isVisible) {
     injectCSS(selectors['Slack search unread badges - channels'](elementDisplay));
 
     //each time button pressed, swap title
-    swapTitle(isVisible)
+    swapTitle(showMessages)
 
-    //set messageVisibility equal to its new, opposite value since isVisible was set to "!messageVisibility" in the click event handler. the new value must be stored in this global variable so it persists in the browser's memory, gets attached to the 'window' object, and has the correct updated value next time the button is clicked.
-    messageVisibility = isVisible;
+    //set messageVisibility equal to its new, opposite value since showMessages was set to "!messageVisibility" in the click event handler. the new value must be stored in this global variable so it persists in the browser's memory, gets attached to the 'window' object, and has the correct updated value next time the button is clicked.
+    messageVisibility = showMessages;
 }
 
 //continuously check if messages sidebar and favicon link exist. once they do, stop checking and call the appropriate functions. this is the file's initial function call. 
-let checkExists = setInterval(function () {
+const checkExists = setInterval(function () {
     if (
         document.getElementsByClassName('p-channel_sidebar__list').length > 0 
         && document.querySelector('link[rel*="icon"]').href.length > 0 
