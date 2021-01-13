@@ -2,7 +2,7 @@
 const noMessageFavicon = chrome.extension.getURL("/hider/favicon-no-messages.png");
 
 //create flag to control whether messages sidebar should be hidden. set value to true and remove initial toggleMessages function call to show messages by default. set to false and include an initial toggleMessages call to hide messages by default.
-let messageVisibility = false;
+let showMessages = false;
 
 //declare toggle button variable. needs to be global because it's used in multiple functions. 
 let messageToggleButton;
@@ -20,14 +20,14 @@ function getSidebar() {
 function addToggleButton() {
     messageToggleButton = document.createElement('button');
 
-    messageToggleButton.innerHTML = messageVisibility ? 'Hide messages' : 'Show messages';
+    messageToggleButton.innerHTML = showMessages ? 'Hide messages' : 'Show messages';
 
     //append a class from the inject.css file, and append a native slack class 
     messageToggleButton.classList.add('message-toggle-button', 'c-button-unstyled');
 
-    //add listener that calls "toggleMessages" when button clicked, and passes opposite of current "messageVisibility" boolean value. "messageVisibility" is set to 'false' initially, so this initially passes 'true'.
+    //add listener that calls "toggleMessages" when button clicked, and passes opposite of current "showMessages" boolean value. "showMessages" is set to 'false' initially, so this initially passes 'true'.
     messageToggleButton.addEventListener('click', function (evt) {
-        toggleMessages(!messageVisibility);
+        toggleMessages(!showMessages);
     });
 
     //store messages sidebar in a variable
@@ -58,7 +58,7 @@ function swapFavicon(showFavicon) {
 
         //set mutation observer that swaps the "no message" favicon back in if it's ever changed while messages are hidden. have to observe the "head" element because slack swaps out the  full favicon element whenever the favicon needs to be changed. 
         faviconObserver = new MutationObserver(function(mutations) {
-            if (!messageVisibility && document.querySelector('link[rel*="icon"]').href != noMessageFavicon) {
+            if (!showMessages && document.querySelector('link[rel*="icon"]').href != noMessageFavicon) {
                 document.querySelector('link[rel*="icon"]').href = noMessageFavicon;
             } 
         });
@@ -71,9 +71,9 @@ function swapFavicon(showFavicon) {
     }
 }
 
-function swapTitle(titleVisiblity) {
+function swapTitle(showDefaultTitle) {
 
-    if (titleVisiblity) {
+    if (showDefaultTitle) {
 
         document.title = 'Slack';
 
@@ -86,7 +86,7 @@ function swapTitle(titleVisiblity) {
 
         //activate the mutation observer
         titleObserver = new MutationObserver(function(mutations) {
-            if (!messageVisibility && document.title != "Messages hidden") {
+            if (!showMessages && document.title != "Messages hidden") {
                 document.title = "Messages hidden";
             } 
         });
@@ -123,20 +123,20 @@ selectors = {
     'Slack search unread badges - channels': function (value) { return `.c-channel_entity__mentions { display: ${value}; }` },
 }
 
-//called when show/hide button clicked, with current "messageVisibility" boolean value. clicking the button adjusts the sidebar visibility and button text.  
-function toggleMessages(showMessages) {
+//called when show/hide button clicked, with current "showMessages" boolean value. clicking the button adjusts the sidebar visibility and button text.  
+function toggleMessages(areMessagesVisible) {
     const slackChannelSidebar = getSidebar();
     
     //store the appropriate visibility and display css values
-    const elementVisibility = showMessages ? 'visible' : 'hidden';
-    const elementDisplay = showMessages ? 'flex' : 'none';
+    const elementVisibility = areMessagesVisible ? 'visible' : 'hidden';
+    const elementDisplay = areMessagesVisible ? 'flex' : 'none';
 
     slackChannelSidebar.style.visibility = elementVisibility;
 
-    messageToggleButton.innerHTML = showMessages ? 'Hide messages' : 'Show messages';
+    messageToggleButton.innerHTML = areMessagesVisible ? 'Hide messages' : 'Show messages';
 
     //swap favicon each time button pressed
-    swapFavicon(showMessages);
+    swapFavicon(areMessagesVisible);
 
     // clear any css injected previously
     clearInjectedCSS();
@@ -146,10 +146,10 @@ function toggleMessages(showMessages) {
     injectCSS(selectors['Slack search unread badges - channels'](elementDisplay));
 
     //each time button pressed, swap title
-    swapTitle(showMessages)
+    swapTitle(areMessagesVisible)
 
-    //set messageVisibility equal to its new, opposite value since showMessages was set to "!messageVisibility" in the click event handler. the new value must be stored in this global variable so it persists in the browser's memory, gets attached to the 'window' object, and has the correct updated value next time the button is clicked.
-    messageVisibility = showMessages;
+    //set showMessages equal to its new, opposite value since areMessagesVisible was set to "!showMessages" in the click event handler. the new value must be stored in this global variable so it persists in the browser's memory, gets attached to the 'window' object, and has the correct updated value next time the button is clicked.
+    showMessages = areMessagesVisible;
 }
 
 //continuously check if messages sidebar and favicon link exist. once they do, stop checking and call the appropriate functions. this is the file's initial function call. 
@@ -162,6 +162,6 @@ const checkExists = setInterval(function () {
         clearInterval(checkExists);
         addToggleButton();
         //call this to hide messages by default when slack is first loaded
-        toggleMessages(messageVisibility);
+        toggleMessages(showMessages);
     }
 }, 100);
