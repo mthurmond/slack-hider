@@ -4,3 +4,6 @@
  Requires you to use the slack web app, not the desktop app. 
  
  Originally forked from [quiet-slack](https://github.com/tavva/quiet-slack).
+
+ # demo
+ ![Slack hider gif](slack-hider.gif)
