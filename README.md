@@ -5,7 +5,7 @@
 
  When you're ready to see your messages again, just click the button and they're back. 
  
-See a problem? Please ![file any issues here](https://github.com/mthurmond/slack-hider/issues). 
+See a problem? Please [file any issues here](https://github.com/mthurmond/slack-hider/issues). 
 
 # Inspiration
 This was originally forked from [quiet-slack](https://github.com/tavva/quiet-slack) and then I made a bunch of updates.
