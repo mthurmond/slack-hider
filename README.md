@@ -13,4 +13,4 @@ This was originally forked from [quiet-slack](https://github.com/tavva/quiet-sla
 I also love, and recommend, other zen-inducing chrome extensions like Facebook Newsfeed Eradicator, Distraction Free Youtube, and Inbox When Ready. 
 
  # Demo
- ![Slack hider gif](hider/slack-hider.gif)
+ ![Slack hider gif](demo.gif)

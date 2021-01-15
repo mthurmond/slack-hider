@@ -26,6 +26,6 @@
     }],
 
     "web_accessible_resources": [
-        "/hider/favicon-no-messages.png"
+        "hider/favicon-no-messages.png"
     ]
 }
