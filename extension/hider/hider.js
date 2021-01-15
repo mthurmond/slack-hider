@@ -11,6 +11,11 @@ let messageToggleButton;
 let titleObserver;
 let faviconObserver;
 
+// add style for badges that appear in search results so, later, the display property can be toggled based on whether messages are visible.
+const badgeStyleElement = document.createElement('style');
+badgeStyleElement.id = 'slack-hider-injected';
+document.body.appendChild(badgeStyleElement);
+
 function getSidebar() {
     return document.getElementsByClassName('p-channel_sidebar__list')[0];
 }
@@ -110,7 +115,6 @@ function toggleMessages(areMessagesVisible) {
 
     //set badge element display so mention badges only appear in search results while messages are visible
     const badgeDisplay = areMessagesVisible ? 'inline-block' : 'none';
-    const badgeStyleElement = document.getElementById('slack-hider-injected');
     badgeStyleElement.innerHTML = `.c-mention_badge { display: ${badgeDisplay}; }`
 
     //swap favicon each time button pressed
@@ -123,19 +127,9 @@ function toggleMessages(areMessagesVisible) {
     showMessages = areMessagesVisible;
 }
 
-// adds styles to the page that will be adjusted based on whether messages are hidden
-function addStyles() {
-    //create style for mention badges
-    const badgeStyleElement = document.createElement('style');
-    badgeStyleElement.id = 'slack-hider-injected';
-    badgeStyleElement.innerHTML = '.c-mention_badge { display: inline-block; }';
-    document.body.appendChild(badgeStyleElement);
-}
-
 //once the required elements exist, this function initiates the slack hider
 function initiateSlackHider() {
     addToggleButton();
-    addStyles();
     
     //call this to hide messages by default when slack is first loaded
     toggleMessages(showMessages);
