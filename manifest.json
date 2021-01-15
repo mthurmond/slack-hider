@@ -21,8 +21,8 @@
 
     "content_scripts": [{
         "matches": ["https://app.slack.com/client*"],
-        "css": ["hider/inject.css"],
-        "js": ["hider/inject.js"]
+        "css": ["hider/hider.css"],
+        "js": ["hider/hider.js"]
     }],
 
     "web_accessible_resources": [
