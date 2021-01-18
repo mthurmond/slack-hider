@@ -113,6 +113,10 @@ function toggleMessages(areMessagesVisible) {
 
     messageToggleButton.innerHTML = areMessagesVisible ? 'Hide messages' : 'Show messages';
 
+    //toggle id that makes the slack workspace opaque while messages are hidden 
+    const workspaceElement = document.getElementsByClassName('p-workspace__primary_view')[0];
+    workspaceElement.id = areMessagesVisible ? '' : 'hider__slack-workspace--opaque';
+    
     //set badge element display so mention badges only appear in search results while messages are visible
     const badgeDisplay = areMessagesVisible ? 'inline-block' : 'none';
     badgeStyleElement.innerHTML = `.c-mention_badge { display: ${badgeDisplay}; }`
