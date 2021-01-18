@@ -26,8 +26,9 @@ function addToggleButton() {
 
     messageToggleButton.innerHTML = showMessages ? 'Hide messages' : 'Show messages';
 
-    //append a class from the hider.css file, and append a native slack class 
-    messageToggleButton.classList.add('hider__message-toggle-button', 'c-button-unstyled');
+    //add an id from the hider.css file and a native slack class 
+    messageToggleButton.id = 'hider__message-toggle-button';
+    messageToggleButton.classList.add('c-button-unstyled');
 
     //add listener that calls "toggleMessages" when button clicked, and passes opposite of current "showMessages" boolean value. "showMessages" is set to 'false' initially, so this initially passes 'true'.
     messageToggleButton.addEventListener('click', function (evt) {
