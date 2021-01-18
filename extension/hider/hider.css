@@ -1,6 +1,5 @@
-/* stlye the "show messages" button created by the extension */
-/* later: see if i can do this without using "!important" */
-.message-toggle-button {
+/* style the toggle button */
+.hider__message-toggle-button {
     margin: 20px 0 2px 16px !important;
     font-weight: 900 !important;
     color: white !important;
@@ -8,11 +7,13 @@
     font-style: Slack-Lato !important;
 }
 
+/* add opacity to the workspace while messages are hidden */
 #hider__slack-workspace--opaque {
     opacity: 0.2;
     transition: opacity 0.2s;
 }
 
+/* remove opacity if the user hovers over the workspace while messages are hidden */
 #hider__slack-workspace--opaque:hover {
     opacity: 1.0;
 }

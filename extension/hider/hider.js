@@ -13,7 +13,7 @@ let faviconObserver;
 
 // add style for badges that appear in search results so, later, the display property can be toggled based on whether messages are visible.
 const badgeStyleElement = document.createElement('style');
-badgeStyleElement.id = 'slack-hider-injected';
+badgeStyleElement.id = 'hider__slack-badge';
 document.body.appendChild(badgeStyleElement);
 
 function getSidebar() {
@@ -27,7 +27,7 @@ function addToggleButton() {
     messageToggleButton.innerHTML = showMessages ? 'Hide messages' : 'Show messages';
 
     //append a class from the hider.css file, and append a native slack class 
-    messageToggleButton.classList.add('message-toggle-button', 'c-button-unstyled');
+    messageToggleButton.classList.add('hider__message-toggle-button', 'c-button-unstyled');
 
     //add listener that calls "toggleMessages" when button clicked, and passes opposite of current "showMessages" boolean value. "showMessages" is set to 'false' initially, so this initially passes 'true'.
     messageToggleButton.addEventListener('click', function (evt) {
