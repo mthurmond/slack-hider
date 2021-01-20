@@ -16,6 +16,14 @@ const badgeStyleElement = document.createElement('style');
 badgeStyleElement.id = 'hider__slack-badge';
 document.body.appendChild(badgeStyleElement);
 
+const workspaceOpacityStyle = document.createElement('style');
+workspaceOpacityStyle.id = 'hider__slack-workspace--opaque';
+document.body.appendChild(workspaceOpacityStyle);
+
+const workspaceHoverStyle = document.createElement('style');
+workspaceHoverStyle.id = 'hider__slack-workspace--hover';
+document.body.appendChild(workspaceHoverStyle);
+
 function getSidebar() {
     return document.getElementsByClassName('p-channel_sidebar__list')[0];
 }
@@ -114,13 +122,19 @@ function toggleMessages(areMessagesVisible) {
 
     messageToggleButton.innerHTML = areMessagesVisible ? 'Hide messages' : 'Show messages';
 
-    //toggle id that makes the slack workspace opaque while messages are hidden 
-    const workspaceElement = document.getElementsByClassName('p-workspace__primary_view')[0];
-    workspaceElement.id = areMessagesVisible ? '' : 'hider__slack-workspace--opaque';
-    
     //set badge element display so mention badges only appear in search results while messages are visible
     const badgeDisplay = areMessagesVisible ? 'inline-block' : 'none';
     badgeStyleElement.innerHTML = `.c-mention_badge { display: ${badgeDisplay}; }`
+
+    if (areMessagesVisible) {
+        workspaceOpacityStyle.innerHTML = '';
+        workspaceHoverStyle.innerHTML = '';
+
+    } else {
+        workspaceOpacityStyle.innerHTML = '.p-workspace__primary_view, .p-workspace__secondary_view { opacity: 0.2; transition: opacity 1.0s; }';
+
+        workspaceHoverStyle.innerHTML = '.p-workspace__primary_view:hover, .p-workspace__secondary_view:hover, .p-workspace__primary_view:hover ~ .p-workspace__secondary_view { opacity: 1.0; transition: opacity 1.0s; }';
+    }
 
     //swap favicon each time button pressed
     swapFavicon(areMessagesVisible);

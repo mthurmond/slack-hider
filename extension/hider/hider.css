@@ -6,14 +6,3 @@
     font-size: 15px;
     font-style: Slack-Lato;
 }
-
-/* add opacity to the workspace while messages are hidden */
-#hider__slack-workspace--opaque {
-    opacity: 0.2;
-    transition: opacity 0.2s;
-}
-
-/* remove opacity if the user hovers over the workspace while messages are hidden */
-#hider__slack-workspace--opaque:hover {
-    opacity: 1.0;
-}
