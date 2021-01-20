@@ -24,6 +24,14 @@ const workspaceHoverStyle = document.createElement('style');
 workspaceHoverStyle.id = 'hider__slack-workspace--hover';
 document.body.appendChild(workspaceHoverStyle);
 
+const skinBackground = document.createElement('style');
+skinBackground.id = 'hider__slack-skin--background';
+document.body.appendChild(skinBackground);
+
+const skinHover = document.createElement('style');
+skinHover.id = 'hider__slack-skin--hover';
+document.body.appendChild(skinHover);
+
 function getSidebar() {
     return document.getElementsByClassName('p-channel_sidebar__list')[0];
 }
@@ -134,6 +142,14 @@ function toggleMessages(areMessagesVisible) {
         workspaceOpacityStyle.innerHTML = '.p-workspace__primary_view, .p-workspace__secondary_view { opacity: 0.2; transition: opacity 1.0s; }';
 
         workspaceHoverStyle.innerHTML = '.p-workspace__primary_view:hover, .p-workspace__secondary_view:hover, .p-workspace__primary_view:hover ~ .p-workspace__secondary_view { opacity: 1.0; transition: opacity 1.0s; }';
+    }
+
+    if (areMessagesVisible) {
+        skinBackground.innerHTML = '';
+        skinHover.innerHTML = '';
+    } else {
+        skinBackground.innerHTML = '.p-top_nav, .p-ia__sidebar_header, .p-channel_sidebar, .p-top_nav__search { background-color: black; transition: background-color 2.0s }';
+        skinHover.innerHTML = '.p-ia__sidebar_header--top-nav:not(.p-ia__sidebar_header--creator-setup):hover, .p-top_nav__search:hover { background-color: #171617; transition: none; }';
     }
 
     //swap favicon each time button pressed
