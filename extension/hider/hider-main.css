@@ -1,0 +1,27 @@
+.p-workspace__primary_view, .p-workspace__secondary_view { 
+    opacity: 0.2; 
+    transition: opacity 1.0s; 
+}
+
+.p-workspace__primary_view:hover, .p-workspace__secondary_view:hover, .p-workspace__primary_view:hover ~ .p-workspace__secondary_view {
+    opacity: 1.0; 
+    transition: opacity 1.0s; 
+}
+
+.p-top_nav, .p-ia__sidebar_header, .p-channel_sidebar, .p-top_nav__search { 
+    background-color: black; 
+    transition: background-color 2.0s; 
+}
+
+.p-ia__sidebar_header--top-nav:not(.p-ia__sidebar_header--creator-setup):hover, .p-top_nav__search:hover {
+    background-color: #171617; 
+    transition: none; 
+}
+
+.c-mention_badge { 
+    display: none; 
+}
+
+.p-channel_sidebar__list { 
+    visibility: hidden; 
+}

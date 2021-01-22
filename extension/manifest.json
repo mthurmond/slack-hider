@@ -21,11 +21,12 @@
 
     "content_scripts": [{
         "matches": ["https://app.slack.com/client*"],
-        "css": ["hider/hider.css"],
+        "css": ["hider/hider-button.css"],
         "js": ["hider/hider.js"]
     }],
 
     "web_accessible_resources": [
-        "hider/favicon-no-messages.png"
+        "hider/favicon-no-messages.png", 
+        "hider/hider-main.css"
     ]
 }

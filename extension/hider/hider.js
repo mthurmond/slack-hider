@@ -11,30 +11,14 @@ let messageToggleButton;
 let titleObserver;
 let faviconObserver;
 
-// add style for badges that appear in search results so, later, the display property can be toggled based on whether messages are visible.
-const badgeStyleElement = document.createElement('style');
-badgeStyleElement.id = 'hider__slack-badge';
-document.body.appendChild(badgeStyleElement);
+// add stylesheet so it can be toggled when messages are hidden
+const stylesheetUrl = chrome.extension.getURL('hider/hider-main.css');    
+const stylesheetElement = document.createElement('link');
 
-const workspaceOpacityStyle = document.createElement('style');
-workspaceOpacityStyle.id = 'hider__slack-workspace--opaque';
-document.body.appendChild(workspaceOpacityStyle);
-
-const workspaceHoverStyle = document.createElement('style');
-workspaceHoverStyle.id = 'hider__slack-workspace--hover';
-document.body.appendChild(workspaceHoverStyle);
-
-const skinBackground = document.createElement('style');
-skinBackground.id = 'hider__slack-skin--background';
-document.body.appendChild(skinBackground);
-
-const skinHover = document.createElement('style');
-skinHover.id = 'hider__slack-skin--hover';
-document.body.appendChild(skinHover);
-
-function getSidebar() {
-    return document.getElementsByClassName('p-channel_sidebar__list')[0];
-}
+stylesheetElement.rel = 'stylesheet';
+stylesheetElement.setAttribute('href', stylesheetUrl);
+stylesheetElement.setAttribute('id', "hider__main-stylesheet");
+document.body.appendChild(stylesheetElement);
 
 //add button to DOM that hides messages
 function addToggleButton() {
@@ -42,7 +26,7 @@ function addToggleButton() {
 
     messageToggleButton.innerHTML = showMessages ? 'Hide messages' : 'Show messages';
 
-    //add an id from the hider.css file and a native slack class 
+    //add an id from the hider-button.css file and a native slack class 
     messageToggleButton.id = 'hider__message-toggle-button';
     messageToggleButton.classList.add('c-button-unstyled');
 
@@ -52,7 +36,7 @@ function addToggleButton() {
     });
 
     //store messages sidebar in a variable
-    const slackChannelSidebar = getSidebar();
+    const slackChannelSidebar = document.getElementsByClassName('p-channel_sidebar__list')[0];
 
     // insert the messageToggleButton as a sibling node that's just before the sidebar
     slackChannelSidebar.parentNode.insertBefore(messageToggleButton, slackChannelSidebar);
@@ -120,37 +104,31 @@ function swapTitle(showDefaultTitle) {
     }
 }
 
+// enable and disable the toggle stylesheet based on whether messages are visible
+function toggleStylesheet(messageVisibility) {
+    
+    const hiderStylesheet = document.getElementById('hider__main-stylesheet');
+
+    if (messageVisibility) {
+        
+        // add the 'disabled' attribute so the stylesheet isn't applied
+        hiderStylesheet.setAttribute('disabled', true);
+
+    } else {
+    
+        // remove the 'disabled' attribute so the stylesheet is applied 
+        hiderStylesheet.removeAttribute('disabled');
+
+    } 
+
+}
+
 //called when show/hide button clicked, with current "showMessages" boolean value. clicking the button adjusts the sidebar visibility and button text.  
 function toggleMessages(areMessagesVisible) {
-    
-    //set sidebar visibility
-    const slackChannelSidebar = getSidebar();
-    const sidebarVisibility = areMessagesVisible ? 'visible' : 'hidden';
-    slackChannelSidebar.style.visibility = sidebarVisibility;
 
     messageToggleButton.innerHTML = areMessagesVisible ? 'Hide messages' : 'Show messages';
 
-    //set badge element display so mention badges only appear in search results while messages are visible
-    const badgeDisplay = areMessagesVisible ? 'inline-block' : 'none';
-    badgeStyleElement.innerHTML = `.c-mention_badge { display: ${badgeDisplay}; }`
-
-    if (areMessagesVisible) {
-        workspaceOpacityStyle.innerHTML = '';
-        workspaceHoverStyle.innerHTML = '';
-
-    } else {
-        workspaceOpacityStyle.innerHTML = '.p-workspace__primary_view, .p-workspace__secondary_view { opacity: 0.2; transition: opacity 1.0s; }';
-
-        workspaceHoverStyle.innerHTML = '.p-workspace__primary_view:hover, .p-workspace__secondary_view:hover, .p-workspace__primary_view:hover ~ .p-workspace__secondary_view { opacity: 1.0; transition: opacity 1.0s; }';
-    }
-
-    if (areMessagesVisible) {
-        skinBackground.innerHTML = '';
-        skinHover.innerHTML = '';
-    } else {
-        skinBackground.innerHTML = '.p-top_nav, .p-ia__sidebar_header, .p-channel_sidebar, .p-top_nav__search { background-color: black; transition: background-color 2.0s }';
-        skinHover.innerHTML = '.p-ia__sidebar_header--top-nav:not(.p-ia__sidebar_header--creator-setup):hover, .p-top_nav__search:hover { background-color: #171617; transition: none; }';
-    }
+    toggleStylesheet(areMessagesVisible);
 
     //swap favicon each time button pressed
     swapFavicon(areMessagesVisible);
