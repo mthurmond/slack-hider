@@ -1,20 +1,15 @@
-//store slack's "no new messages" favicon by loading the image from the .crx file using the chrome extension API's ".getURL" method. 
-const noMessageFavicon = chrome.extension.getURL('/hider/favicon-no-messages.png');
-
 //create flag to control whether messages sidebar should be hidden. set value to true and remove initial toggleMessages function call to show messages by default. set to false and include an initial toggleMessages call to hide messages by default.
 let showMessages = false;
 
-//declare toggle button variable. needs to be global because it's used in multiple functions. 
-let messageToggleButton;
+//declare global variables. toggle button needs to be global because it's used in multiple functions. title and favicon variables are used in mutation observers and need to be tracked over time. 
+let messageToggleButton, titleObserver, faviconObserver;
 
-// declare mutation observer variables. they're each only used in a single function but the value needs to be tracked over time. 
-let titleObserver;
-let faviconObserver;
+//store slack's "no new messages" favicon by loading the image from the .crx file using the chrome extension API's ".getURL" method. 
+const noMessageFavicon = chrome.extension.getURL('/hider/favicon-no-messages.png');
 
-// add stylesheet so it can be toggled when messages are hidden
+// add stylesheet to the DOM so it can be toggled when messages are hidden
 const stylesheetUrl = chrome.extension.getURL('hider/hider-main.css');    
 const stylesheetElement = document.createElement('link');
-
 stylesheetElement.rel = 'stylesheet';
 stylesheetElement.setAttribute('href', stylesheetUrl);
 stylesheetElement.setAttribute('id', "hider__main-stylesheet");
@@ -104,31 +99,17 @@ function swapTitle(showDefaultTitle) {
     }
 }
 
-// enable and disable the toggle stylesheet based on whether messages are visible
-function toggleStylesheet(messageVisibility) {
-    
-    const hiderStylesheet = document.getElementById('hider__main-stylesheet');
-
-    if (messageVisibility) {
-        
-        // add the 'disabled' attribute so the stylesheet isn't applied
-        hiderStylesheet.setAttribute('disabled', true);
-
-    } else {
-    
-        // remove the 'disabled' attribute so the stylesheet is applied 
-        hiderStylesheet.removeAttribute('disabled');
-
-    } 
-
-}
-
 //called when show/hide button clicked, with current "showMessages" boolean value. clicking the button adjusts the sidebar visibility and button text.  
 function toggleMessages(areMessagesVisible) {
 
     messageToggleButton.innerHTML = areMessagesVisible ? 'Hide messages' : 'Show messages';
 
-    toggleStylesheet(areMessagesVisible);
+    // disable the stylesheet if messages are visible, enable it if they're hidden
+    if (areMessagesVisible) {
+        stylesheetElement.setAttribute('disabled', true);
+    } else {
+        stylesheetElement.removeAttribute('disabled');
+    } 
 
     //swap favicon each time button pressed
     swapFavicon(areMessagesVisible);
