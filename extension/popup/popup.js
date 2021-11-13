@@ -8,7 +8,7 @@ const benURL = `${githubURL}/tavva`;
 const quietSlackURL = `${githubURL}/tavva/quiet-slack`;
 
 const manageExtensionsURL = 'chrome://extensions/';
-const extensionsDetailsURL = `${manageExtensionsURL}?id=ghbbhaemcgjamohgkapgkdinhgdcpgim`;
+const extensionsDetailsURL = `${manageExtensionsURL}?id=ojfkenmmieminleikclgocedgpggeecp`;
 
 //open the appropriate new tab when the user clicks each link
 document.querySelector('.feedbackLink').addEventListener('click', function() {
