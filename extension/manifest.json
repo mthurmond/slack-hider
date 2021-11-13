@@ -1,12 +1,12 @@
 {
     "name": "Slack hider",
-    "version": "1.2",
+    "version": "1.3",
     "description": "Hide your slacks to focus and get in the flow. Unhide them whenever you're ready.",
-    "manifest_version": 2,
+    "manifest_version": 3,
 
-    "browser_action": {
+    "action": {
         "default_popup": "popup/popup.html"
-      },
+    },
 
     "permissions": [
         "storage"
@@ -25,8 +25,8 @@
         "js": ["hider/hider.js"]
     }],
 
-    "web_accessible_resources": [
-        "hider/favicon-no-messages.png", 
-        "hider/hider-main.css"
-    ]
+    "web_accessible_resources": [{
+        "resources": ["hider/hider-main.css", "hider/favicon-no-messages.png"], 
+        "matches": ["https://app.slack.com/*"]
+        }]
 }

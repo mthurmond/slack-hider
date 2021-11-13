@@ -5,10 +5,10 @@ let showMessages = false;
 let messageToggleButton, titleObserver, faviconObserver;
 
 //store slack's "no new messages" favicon by loading the image from the .crx file using the chrome extension API's ".getURL" method. 
-const noMessageFavicon = chrome.extension.getURL('/hider/favicon-no-messages.png');
+const noMessageFavicon = chrome.runtime.getURL('/hider/favicon-no-messages.png');
 
 // add stylesheet to the DOM so the "message hidden" styles appear immediately
-const stylesheetUrl = chrome.extension.getURL('hider/hider-main.css');    
+const stylesheetUrl = chrome.runtime.getURL('hider/hider-main.css');    
 const stylesheetElement = document.createElement('link');
 stylesheetElement.rel = 'stylesheet';
 stylesheetElement.setAttribute('href', stylesheetUrl);
