@@ -28,5 +28,5 @@
     "web_accessible_resources": [{
         "resources": ["hider/hider-main.css", "hider/favicon-no-messages.png"], 
         "matches": ["https://app.slack.com/*"]
-        }]
+    }]
 }
