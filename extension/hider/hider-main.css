@@ -10,14 +10,19 @@
     display: none; 
 }
 
+/* remove unread message dot */
+.p-unread_dot { 
+    display: none; 
+}
+
 /* add opacity to workspace */
-.p-workspace__primary_view, .p-workspace__secondary_view { 
+.p-view_contents--primary, .p-view_contents--secondary { 
     opacity: 0.2; 
     transition: opacity 1.0s; 
 }
 
 /* remove opacity when user hovers over workspace */
-.p-workspace__primary_view:hover, .p-workspace__secondary_view:hover, .p-workspace__primary_view:hover ~ .p-workspace__secondary_view {
+.p-view_contents--primary:hover, .p-view_contents--secondary:hover, .p-view_contents--primary:hover ~ .p-view_contents--secondary {
     opacity: 1.0; 
     transition: opacity 1.0s; 
 }

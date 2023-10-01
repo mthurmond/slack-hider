@@ -30,11 +30,14 @@ function addToggleButton() {
         toggleMessages(!showMessages);
     });
 
-    //store messages sidebar in a variable
-    const slackChannelSidebar = document.getElementsByClassName('p-channel_sidebar__list')[0];
-
-    // insert the messageToggleButton as a sibling node that's just before the sidebar
-    slackChannelSidebar.parentNode.insertBefore(messageToggleButton, slackChannelSidebar);
+    //create a div container for the button
+    const toggleButtonContainer = document.createElement('div');
+    toggleButtonContainer.classList.add('hider__toggle-button-container');
+    toggleButtonContainer.appendChild(messageToggleButton);
+    
+    // insert the messageToggleButton as a sibling node that's just before the slack arrow buttons
+    const slackArrowButtons = document.getElementsByClassName('p-ia4_history_buttons')[0];
+    slackArrowButtons.parentNode.insertBefore(toggleButtonContainer, slackArrowButtons);
 
 }
 
@@ -132,7 +135,8 @@ function initiateSlackHider() {
 //continuously check if the required elements exist. once they do, stop checking and call the appropriate function. 
 const checkForElements = setInterval(function () {
     if (
-        document.getElementsByClassName('p-channel_sidebar__list').length > 0 
+        document.getElementsByClassName('p-channel_sidebar__list').length > 0
+        && document.getElementsByClassName('p-ia4_history_buttons').length > 0 
         && document.querySelector('link[rel*="icon"]').href.length > 0 
         && document.title.length > 0
     ) {
